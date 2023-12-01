@@ -8,8 +8,8 @@ import java.util.Random;
 import javax.crypto.Mac;
 import javax.sound.sampled.AudioFileFormat.Type;
 
-import com.aethernet.Config;
-import com.aethernet.Config.ConfigTerm;
+import com.aethernet.config.L2Config;
+import com.aethernet.config.L2Config.ConfigTerm;
 import com.aethernet.mac.MacFrame.Header;
 import com.aethernet.physical.PhysicalManager;
 import com.aethernet.utils.ANSI;

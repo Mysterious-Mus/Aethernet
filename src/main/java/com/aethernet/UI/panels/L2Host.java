@@ -1,4 +1,4 @@
-package com.aethernet.UI;
+package com.aethernet.UI.panels;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -6,9 +6,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JPanel;
 
-import com.aethernet.Config;
 import com.aethernet.Main;
 import com.aethernet.ASIO.ASIOHost;
+import com.aethernet.config.L2Config;
 import com.aethernet.physical.PhysicalManager;
 import com.aethernet.physical.transmit.SoF;
 
@@ -21,7 +21,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
-public class UIHost extends JFrame{
+public class L2Host extends JFrame{
 
     public static class Configs {
         public static int UIHeight = 600;
@@ -32,7 +32,7 @@ public class UIHost extends JFrame{
     public static ArrayList<JPanel> channelSelectPanels = new ArrayList<JPanel>();
     public static ArrayList<JPanel> appCtrls = new ArrayList<JPanel>();
     
-    public UIHost() {
+    public L2Host() {
         super("Acoustic NFC");
         setCloseOp();
         layoutPanel();
@@ -67,7 +67,7 @@ public class UIHost extends JFrame{
         gbc.gridy = 4; this.add(PhysicalManager.channelEnergyPanel, gbc);
         
         gbc.gridheight = gbc.gridy + 1; 
-        gbc.gridy = 0; gbc.gridx = gbc.gridwidth; gbc.gridwidth = 1; this.add(Config.panel, gbc);
+        gbc.gridy = 0; gbc.gridx = gbc.gridwidth; gbc.gridwidth = 1; this.add(L2Config.panel, gbc);
 
         this.setSize(Configs.UIWidth, Configs.UIHeight);
         this.setResizable(false);

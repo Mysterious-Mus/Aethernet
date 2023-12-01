@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-import com.aethernet.Config.ConfigTerm;
+import com.aethernet.config.L2Config.ConfigTerm;
 
 public class FileOp {
     

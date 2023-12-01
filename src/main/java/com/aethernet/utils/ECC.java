@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
-import com.aethernet.Config;
+import com.aethernet.config.L2Config;
 
 public class ECC {
   private boolean[][] generatorMatrix;

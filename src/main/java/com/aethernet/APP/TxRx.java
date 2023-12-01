@@ -12,10 +12,10 @@ import javax.swing.JLabel;
 // text field
 import javax.swing.JTextField;
 
-import com.aethernet.Config;
 import com.aethernet.Main;
 import com.aethernet.APP.utils.AddressTxtField;
-import com.aethernet.UI.UIHost;
+import com.aethernet.UI.panels.L2Host;
+import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;
 import com.aethernet.utils.BitString;
@@ -180,7 +180,7 @@ public class TxRx {
 
 
             // append to appctrl UIs
-            UIHost.appCtrls.add(this);
+            L2Host.appCtrls.add(this);
         }
 
         public byte getHostAddr() {

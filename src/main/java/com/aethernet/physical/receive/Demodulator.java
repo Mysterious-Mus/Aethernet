@@ -2,8 +2,8 @@ package com.aethernet.physical.receive;
 
 import java.util.ArrayList;
 
-import com.aethernet.Config;
 import com.aethernet.ASIO.ASIOHost;
+import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.physical.transmit.OFDM;
 import com.aethernet.utils.Complex;

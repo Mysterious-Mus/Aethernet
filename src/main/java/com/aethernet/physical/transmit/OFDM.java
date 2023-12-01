@@ -2,9 +2,9 @@ package com.aethernet.physical.transmit;
 
 import java.util.ArrayList;
 
-import com.aethernet.Config;
 import com.aethernet.ASIO.ASIOHost;
-import com.aethernet.Config.ConfigTerm;
+import com.aethernet.config.L2Config;
+import com.aethernet.config.L2Config.ConfigTerm;
 
 /* Use OFDM to modulate a bit string
  * Always padded with 0s, the length of the modulated signal will be a multiple of:

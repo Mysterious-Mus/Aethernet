@@ -14,7 +14,6 @@ import javax.swing.event.PopupMenuEvent;
 import java.util.Set;
 
 import com.aethernet.ASIO.ASIOHost;
-import com.aethernet.UI.UIHost;
 import com.aethernet.physical.PhysicalManager.ChannelChangedListener;
 import com.synthbot.jasiohost.AsioChannel;
 
@@ -125,7 +124,7 @@ public class ChannelSelectPanel extends JPanel{
         layoutComponents();
 
         // add to UIHost
-        UIHost.channelSelectPanels.add(this);
+        L2Host.channelSelectPanels.add(this);
     }
 
 

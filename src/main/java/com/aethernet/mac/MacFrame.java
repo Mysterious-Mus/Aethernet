@@ -6,7 +6,7 @@ import java.util.zip.CRC32;
 
 import javax.print.DocFlavor.BYTE_ARRAY;
 
-import com.aethernet.Config.ConfigTerm;
+import com.aethernet.config.L2Config.ConfigTerm;
 import com.aethernet.physical.transmit.OFDM;
 import com.aethernet.utils.CRC8;
 import com.aethernet.utils.TypeConvertion;

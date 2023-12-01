@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.stream.DoubleStream;
 
-import com.aethernet.Config;
+import com.aethernet.config.L2Config;
 import com.aethernet.utils.ECC;
 import com.aethernet.utils.TypeConvertion;
 

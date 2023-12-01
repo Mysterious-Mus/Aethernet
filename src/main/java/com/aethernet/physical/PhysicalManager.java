@@ -11,11 +11,11 @@ import java.awt.GridLayout;
 import java.sql.Array;
 import java.util.ArrayList;
 
-import com.aethernet.Config;
 import com.aethernet.ASIO.ASIOHost;
 import com.aethernet.ASIO.ASIOHost.NewBufferListener;
-import com.aethernet.Config.ConfigTerm;
 import com.aethernet.UI.panels.ChannelSelectPanel;
+import com.aethernet.config.L2Config;
+import com.aethernet.config.L2Config.ConfigTerm;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager.physicalCallback;
 import com.aethernet.physical.receive.Demodulator;

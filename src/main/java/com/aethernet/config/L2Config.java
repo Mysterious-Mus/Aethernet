@@ -1,4 +1,4 @@
-package com.aethernet;
+package com.aethernet.config;
 
 import javax.swing.*;
 
@@ -34,7 +34,9 @@ import java.util.Scanner;
  */
 
 
-public class Config {
+public class L2Config {
+
+    public static final String CONF_PATH = "configs\\L2Config.txt";
 
     public static ArrayList<ConfigTerm> ConfigTermList = new ArrayList<>();
     public static Map<String, ConfigTerm> configTermsMap = new HashMap<String, ConfigTerm>();
@@ -73,7 +75,7 @@ public class Config {
                         }
                         updDisp();
                         // update the passive ones
-                        Config.ConfigChange();
+                        L2Config.ConfigChange();
                     });
                 }
             }
@@ -231,7 +233,7 @@ public class Config {
     }
     public static ConfigPanel panel;
 
-    public Config() {
+    public L2Config() {
         ConfigTermList.add(ASIOHost.Configs.sampleRate);
         ConfigTermList.add(ASIOHost.Configs.BUFFER_SIZE);
         ConfigTermList.add(MacFrame.Configs.payloadNumBytes);
@@ -286,8 +288,8 @@ public class Config {
 
     public static void DumpConfig() {
         // print info
-        System.out.println("Dumping config to config.txt");
-        try (PrintWriter writer = new PrintWriter(new File("config.txt"))) {
+        System.out.println("Dumping config to " + CONF_PATH);
+        try (PrintWriter writer = new PrintWriter(new File(CONF_PATH))) {
             for (ConfigTerm term : ConfigTermList) {
                 if (!term.isPassive()) {
                     writer.println(term.name + " " + term.v());
@@ -300,8 +302,8 @@ public class Config {
 
     public static void LoadConfig() {
         // print info
-        System.out.println("Loading config from config.txt");
-        try (Scanner scanner = new Scanner(new File("config.txt"))) {
+        System.out.println("Loading config from " + CONF_PATH);
+        try (Scanner scanner = new Scanner(new File(CONF_PATH))) {
             while (scanner.hasNextLine()) {
                 String[] line = scanner.nextLine().split(" ");
                 ConfigTerm term = configTermsMap.get(line[0]);

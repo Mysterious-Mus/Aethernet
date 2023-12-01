@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import com.aethernet.Config;
 import com.aethernet.APP.TxRx;
 import com.aethernet.ASIO.ASIOHost;
-import com.aethernet.UI.UIHost;
+import com.aethernet.UI.panels.L2Host;
+import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacManager;
 import com.aethernet.physical.PhysicalManager;
 import com.aethernet.utils.AddrAlloc;
@@ -18,12 +18,12 @@ import javax.swing.JButton;
 
 public class Main {
     
-    Config config;
+    L2Config config;
 
     public static AddrAlloc addrAlloc = new AddrAlloc();
 
     ASIOHost asioHost;
-    public static UIHost uiHost;
+    public static L2Host uiHost;
     public static ArrayList<TxRx> txrxApps = new ArrayList<TxRx>();
 
     public static void AllStop() {
@@ -73,14 +73,14 @@ public class Main {
     public static AllCtrlPanel allCtrlPanel = new AllCtrlPanel();
 
     public Main() {
-        config = new Config();
+        config = new L2Config();
         asioHost = new ASIOHost();
 
         txrxApps.add(new TxRx("TxRx 1", (byte) 0x00, (byte) 0x01));
         txrxApps.add(new TxRx("TxRx 2", (byte) 0x01, (byte) 0x00));
         // ui should be launched last because it has to collect all the panels,
         // also, it should wait for other threads to be ready
-        uiHost = new UIHost();
+        uiHost = new L2Host();
     }
 
     public static void main(String[] args) {

@@ -1,7 +1,7 @@
 package com.aethernet.utils;
 
-import com.aethernet.Config;
 import com.aethernet.ASIO.ASIOHost;
+import com.aethernet.config.L2Config;
 
 public class Music {
     private final double duration = 1.5; // seconds for each chord

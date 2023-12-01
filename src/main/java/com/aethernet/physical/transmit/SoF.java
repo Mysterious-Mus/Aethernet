@@ -7,9 +7,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.aethernet.Config;
 import com.aethernet.ASIO.ASIOHost;
-import com.aethernet.Config.ConfigTerm;
+import com.aethernet.config.L2Config;
+import com.aethernet.config.L2Config.ConfigTerm;
 import com.aethernet.utils.CyclicBuffer;
 
 import java.awt.GridLayout;
