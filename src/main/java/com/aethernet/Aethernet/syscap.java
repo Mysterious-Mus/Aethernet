@@ -3,24 +3,22 @@ package com.aethernet.Aethernet;
 import java.util.List;
 
 import com.aethernet.utils.CyclicBuffer;
+import com.aethernet.Aethernet.utils.IPAddr;
+import com.aethernet.Aethernet.utils.PacketResolve;
+import com.aethernet.Aethernet.utils.PacketCreate;
 
-import com.sun.jna.Platform;
-import java.io.IOException;
-import org.pcap4j.core.BpfProgram.BpfCompileMode;
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PacketListener;
 import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
-import org.pcap4j.core.PcapStat;
 import org.pcap4j.packet.Packet;
-import org.pcap4j.util.NifSelector;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
-import org.pcap4j.packet.IpV4Packet.IpV4Header;
 import java.net.Inet4Address;
 import org.pcap4j.packet.EthernetPacket;
+import org.pcap4j.packet.IcmpV4CommonPacket;
 
 /**
  * this class is used to capture all system packages.
@@ -35,6 +33,18 @@ public class syscap {
     }
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
+
+    public static PcapHandle loopBackAdapter = null;
+
+    public static Inet4Address ipAddr = IPAddr.buildV4FromStr("192.168.111.10");
+    // public static Inet4Address ipAddr = IPAddr.buildV4FromStr("1.1.1.1");
+
+    PacketListener gotPackAction = new PacketListener() {
+        @Override
+        public void gotPacket(Packet packet) {
+        
+        }
+    };
     
     /**
      * start capturing all packets from all adapters
@@ -56,17 +66,18 @@ public class syscap {
                     handle.loop(-1, new PacketListener() {
                         @Override
                         public void gotPacket(Packet packet) {
-                            if (packet instanceof EthernetPacket) {
-                                EthernetPacket ethPacket = (EthernetPacket) packet;
-                                Packet payload = ethPacket.getPayload();
-
-                                if (payload instanceof IpV4Packet) {
-                                    IpV4Packet ipPacket = (IpV4Packet) payload;
-                                    IpV4Packet.IpV4Header header = ipPacket.getHeader();
-                                    Inet4Address srcAddr = header.getSrcAddr();
-                                    Inet4Address dstAddr = header.getDstAddr();
-                                    System.out.println("Source IP: " + srcAddr);
-                                    System.out.println("Destination IP: " + dstAddr);
+                            if (PacketResolve.isPingingMe(packet, ipAddr)) {
+                                System.out.println(packet);
+                                // Create ICMPv4 echo reply
+                                EthernetPacket replyPacket = 
+                                    PacketCreate.createReplyPacket((EthernetPacket)packet);
+                                // print reply packet
+                                System.out.println(replyPacket);
+                                try {
+                                    loopBackAdapter.sendPacket(replyPacket);
+                                }
+                                catch (PcapNativeException | NotOpenException e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -82,16 +93,27 @@ public class syscap {
         List<PcapNetworkInterface> allDevs = null;
         try {
             allDevs = Pcaps.findAllDevs();
-        }
-        catch (PcapNativeException e) {
+        } catch (PcapNativeException e) {
             e.printStackTrace();
         }
 
-        for (PcapNetworkInterface device : allDevs) {
-            if (device.isLoopBack()) {
-                System.out.println("Found loopback adapter: " + device.getName());
-                // You can start capturing packets from the loopback adapter here
-            }
+        for (PcapNetworkInterface nif : allDevs) {
+            System.out.println(nif.getName() + " (" + nif.getDescription() + ")");
+        }
+
+        String adapterDescriptionPreffix = "Intel(R) Wi-Fi";
+        // String adapterDescriptionPreffix = "Microsoft KM-TEST";
+        PcapNetworkInterface nif = allDevs.stream()
+            .filter(dev -> dev.getDescription() != null && dev.getDescription().startsWith(adapterDescriptionPreffix))
+            .findFirst()
+            .orElse(null);
+
+        try {
+            loopBackAdapter = nif.openLive(
+                Configs.SNAPLEN, PromiscuousMode.PROMISCUOUS, Configs.READ_TIMEOUT);
+        }
+        catch (PcapNativeException e) {
+            e.printStackTrace();
         }
     }
 
