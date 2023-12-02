@@ -39,16 +39,7 @@ public class L2Host extends JFrame{
     }
 
     private void setCloseOp() {
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                // Your custom logic here
-                System.out.println("Window is closing");
-                // call System.exit(0) or dispose() as required
-                System.exit(0);
-            }
-        });
+        this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
     private void layoutPanel() {
@@ -71,7 +62,7 @@ public class L2Host extends JFrame{
 
         this.setSize(Configs.UIWidth, Configs.UIHeight);
         this.setResizable(false);
-        this.setVisible(true);
+        // this.setVisible(true);
     }
 
     private class ChannelPanel extends JPanel{

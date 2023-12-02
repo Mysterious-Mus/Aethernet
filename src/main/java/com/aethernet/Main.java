@@ -6,7 +6,9 @@ import javax.swing.JPanel;
 
 import com.aethernet.APP.TxRx;
 import com.aethernet.ASIO.ASIOHost;
-import com.aethernet.UI.L2Host;
+import com.aethernet.Aethernet.IPHost;
+import com.aethernet.UI.EthHost;
+import com.aethernet.config.EthConfig;
 import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacManager;
 import com.aethernet.physical.PhysicalManager;
@@ -18,13 +20,15 @@ import javax.swing.JButton;
 
 public class Main {
     
-    L2Config config;
+    L2Config l2config;
+    EthConfig ethConfig;
 
     public static AddrAlloc addrAlloc = new AddrAlloc();
 
     ASIOHost asioHost;
-    public static L2Host uiHost;
+    EthHost ethHost;
     public static ArrayList<TxRx> txrxApps = new ArrayList<TxRx>();
+    public static ArrayList<IPHost> ipHosts = new ArrayList<IPHost>();
 
     public static void AllStop() {
         for (TxRx txrx : txrxApps) {
@@ -73,14 +77,20 @@ public class Main {
     public static AllCtrlPanel allCtrlPanel = new AllCtrlPanel();
 
     public Main() {
-        config = new L2Config();
+        l2config = new L2Config();
         asioHost = new ASIOHost();
-
+        
         txrxApps.add(new TxRx("TxRx 1", (byte) 0x00, (byte) 0x01));
         txrxApps.add(new TxRx("TxRx 2", (byte) 0x01, (byte) 0x00));
+        
+        ipHosts.add(new IPHost("IPHost_1"));
+        ipHosts.add(new IPHost("IPHost_2"));
+        // because of java lazy initialization, now the parameters of ipHost are
+        // initialized in the ctor of IPHost
+        ethConfig = new EthConfig();
         // ui should be launched last because it has to collect all the panels,
         // also, it should wait for other threads to be ready
-        uiHost = new L2Host();
+        ethHost = new EthHost();
     }
 
     public static void main(String[] args) {
