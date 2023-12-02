@@ -14,6 +14,7 @@ import javax.swing.event.PopupMenuEvent;
 import java.util.Set;
 
 import com.aethernet.ASIO.ASIOHost;
+import com.aethernet.UI.L2Host;
 import com.aethernet.physical.PhysicalManager.ChannelChangedListener;
 import com.synthbot.jasiohost.AsioChannel;
 

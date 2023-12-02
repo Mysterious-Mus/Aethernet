@@ -14,7 +14,7 @@ import javax.swing.JTextField;
 
 import com.aethernet.Main;
 import com.aethernet.APP.utils.AddressTxtField;
-import com.aethernet.UI.panels.L2Host;
+import com.aethernet.UI.L2Host;
 import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;

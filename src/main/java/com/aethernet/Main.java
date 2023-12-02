@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 
 import com.aethernet.APP.TxRx;
 import com.aethernet.ASIO.ASIOHost;
-import com.aethernet.UI.panels.L2Host;
+import com.aethernet.UI.L2Host;
 import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacManager;
 import com.aethernet.physical.PhysicalManager;

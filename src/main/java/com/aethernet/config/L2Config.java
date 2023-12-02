@@ -9,6 +9,7 @@ import com.aethernet.physical.PhysicalManager;
 import com.aethernet.physical.transmit.OFDM;
 import com.aethernet.physical.transmit.SoF;
 import com.aethernet.utils.FileOp;
+import com.aethernet.config.utils.ConfigTermTemplate;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -38,8 +39,8 @@ public class L2Config {
 
     public static final String CONF_PATH = "configs\\L2Config.txt";
 
-    public static ArrayList<ConfigTerm> ConfigTermList = new ArrayList<>();
-    public static Map<String, ConfigTerm> configTermsMap = new HashMap<String, ConfigTerm>();
+    public static ArrayList<ConfigTermTemplate> ConfigTermList = new ArrayList<>();
+    public static Map<String, ConfigTermTemplate> configTermsMap = new HashMap<String, ConfigTermTemplate>();
 
     /**
      * A class to hold the name and value of a config term
@@ -48,122 +49,11 @@ public class L2Config {
      * 
      * NAME is supposed to be the variable name for the sake of maintenance
      */
-    public static class ConfigTerm<T> implements Serializable {
-    
-        T value = null;
-        String name;
-        boolean passive;
-
-        TermDisp displayer;
-
-        private class TermDisp implements Serializable{
-
-            public JComponent displayer;
-
-            public TermDisp() {
-                this.displayer = passive? new JLabel(value2Str()) : new JTextField(value2Str());
-
-                // set concentration lost callback
-                if (!passive) {
-                    ((JTextField)displayer).addActionListener(e -> {
-                        // print message
-                        System.out.println("ConfigTerm: " + name + " changed to " + ((JTextField)displayer).getText());
-                        // update the value
-                        T newVal = fromString(((JTextField)displayer).getText());
-                        if (newValCheck(newVal)) {
-                            set(newVal);
-                        }
-                        updDisp();
-                        // update the passive ones
-                        L2Config.ConfigChange();
-                    });
-                }
-            }
-
-            public void updDisp() {
-                if (passive) {
-                    ((JLabel)displayer).setText(value2Str());
-                }
-                else {
-                    ((JTextField)displayer).setText(value2Str());
-                }
-            }
-
-        }
-
-        public JComponent displayer() {
-            return displayer.displayer;
-        }
+    public static class ConfigTerm<T> extends ConfigTermTemplate<T>{
 
         public ConfigTerm(String name, T value, boolean passive) {
-            this.name = name;
-            this.value = value;
-            this.passive = passive;
-            this.displayer = new TermDisp();
-            configTermsMap.put(name, this);
+            super(name, value, passive, configTermsMap, () -> {ConfigChange();});
         }
-
-        public boolean isPassive() {
-            return passive;
-        }
-
-        public String value2Str() {
-            if (value instanceof Integer) {
-                return Integer.toString((Integer) value);
-            }
-            else if (value instanceof Float) {
-                return Float.toString((Float) value);
-            }
-            else if (value instanceof Double) {
-                return Double.toString((Double) value);
-            }
-            else if (value instanceof Boolean) {
-                return Boolean.toString((Boolean) value);
-            }
-           else if (value instanceof String) {
-                return (String)value;
-            }
-            else {
-                return "Unsupported Type";
-            }
-        }
-
-        public T fromString(String x) {
-            if (value instanceof Integer) {
-                return (T) Integer.valueOf(x);
-            }
-            else if (value instanceof Float) {
-                return (T) Float.valueOf(x);
-            }
-            else if (value instanceof Double) {
-                return (T) Double.valueOf(x);
-            }
-            else if (value instanceof Boolean) {
-                return (T) Boolean.valueOf(x);
-            }
-            else if (value instanceof String) {
-                return (T)x;
-            }
-            else {
-                return null;
-            }
-        }
-    
-        public T v() {
-            return value;
-        }
-
-        public void set(T x) {
-            value = x;
-            displayer.updDisp();
-        }
-
-        public void PassiveParamUpdVal() {
-            // print not implemented
-            System.out.println("PassiveParamUpdVal not implemented: " + name);
-        }
-
-        public boolean newValCheck(T newVal) {return true;};
     }
 
 
@@ -279,7 +169,7 @@ public class L2Config {
     
     public static void ConfigChange() {
         // check all passive configs
-        for (ConfigTerm term : ConfigTermList) {
+        for (ConfigTermTemplate term : ConfigTermList) {
             if (term.isPassive()) {
                 term.PassiveParamUpdVal();
             }
@@ -290,7 +180,7 @@ public class L2Config {
         // print info
         System.out.println("Dumping config to " + CONF_PATH);
         try (PrintWriter writer = new PrintWriter(new File(CONF_PATH))) {
-            for (ConfigTerm term : ConfigTermList) {
+            for (ConfigTermTemplate term : ConfigTermList) {
                 if (!term.isPassive()) {
                     writer.println(term.name + " " + term.v());
                 }
@@ -306,8 +196,8 @@ public class L2Config {
         try (Scanner scanner = new Scanner(new File(CONF_PATH))) {
             while (scanner.hasNextLine()) {
                 String[] line = scanner.nextLine().split(" ");
-                ConfigTerm term = configTermsMap.get(line[0]);
-                term.set(term.fromString(line[1]));
+                ConfigTermTemplate term = configTermsMap.get(line[0]);
+                term.set(line[1]);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

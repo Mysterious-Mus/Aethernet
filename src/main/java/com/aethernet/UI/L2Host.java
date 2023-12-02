@@ -1,4 +1,4 @@
-package com.aethernet.UI.panels;
+package com.aethernet.UI;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
