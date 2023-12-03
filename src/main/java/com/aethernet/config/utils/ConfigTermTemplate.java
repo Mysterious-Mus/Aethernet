@@ -87,6 +87,9 @@ public class ConfigTermTemplate<T> {
         else if (value instanceof String) {
             return (String)value;
         }
+        else if (value instanceof Byte) {
+            return Byte.toString((Byte) value);
+        }
         else {
             return "Unsupported Type";
         }
@@ -107,6 +110,9 @@ public class ConfigTermTemplate<T> {
         }
         else if (value instanceof String) {
             return (T)x;
+        }
+        else if (value instanceof Byte) {
+            return (T) Byte.valueOf(x);
         }
         else {
             return null;

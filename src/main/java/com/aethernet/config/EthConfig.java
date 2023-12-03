@@ -93,7 +93,7 @@ public class EthConfig {
             while (scanner.hasNextLine()) {
                 String[] line = scanner.nextLine().split(" ");
                 ConfigTermTemplate term = configTermsMap.get(line[0]);
-                term.set(line[1]);
+                if (term != null) term.set(line[1]);
             }
         } catch (FileNotFoundException e) {
             // create file
