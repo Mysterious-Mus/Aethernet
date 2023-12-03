@@ -145,7 +145,7 @@ public class PhysicalManager {
     private ChannelChangedListener inChangedListener = new ChannelChangedListener() {
         @Override
         public void ChannelChanged(AsioChannel channel) {
-            ASIOHost.unregisterReceiver(receiveChannel);
+            ASIOHost.unregisterReceiver(receiveChannel, newBufferListener);
             receiveChannel = channel;
             ASIOHost.registerReceiver(receiveChannel, newBufferListener);
         }

@@ -58,10 +58,10 @@ public class ChannelSelectPanel extends JPanel{
                 addItem(new chanSelWrapper(item));
             }
             if (selectRes != emptyChoice) addItem(emptyChoice);
-            // sanity check: selectResult should not be in the pool
-            if (selectPool.contains(selectRes.getChannel())) {
-                throw new IllegalArgumentException("selectResult should not be in the pool");
-            }
+            // // sanity check: selectResult should not be in the pool
+            // if (selectPool.contains(selectRes.getChannel())) {
+            //     throw new IllegalArgumentException("selectResult should not be in the pool");
+            // }
             addItem(selectRes);
             // set the initial selected item
             setSelectedItem(selectRes);
@@ -81,7 +81,7 @@ public class ChannelSelectPanel extends JPanel{
                         }
                     }
                     for (AsioChannel item : selectPool) {
-                        addItem(new chanSelWrapper(item));
+                        if (item != selectRes.getChannel()) addItem(new chanSelWrapper(item));
                     }
                     if (selectRes != emptyChoice) addItem(emptyChoice);
                 }

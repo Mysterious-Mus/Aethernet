@@ -23,3 +23,4 @@ INPUT_DIR input/
 OUTPUT_DIR output/
 channelClearThresh 0.001
 BACKOFF_AFTER_ACKED 100
+allowChannelMultiAssign true

@@ -2,6 +2,8 @@ package com.aethernet.UI;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JPanel;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 
 public class L2Host extends JFrame{
 
@@ -93,6 +96,13 @@ public class L2Host extends JFrame{
                 gbc.gridy += 1;
                 add(panel, gbc);
             }
+            // display the config: channel multi assign
+            JPanel allowMultiAssignPanel = new JPanel(new GridLayout(0, 2));
+            allowMultiAssignPanel.add(new JLabel("Allow Channel Multiple Assign(need reboot)"));
+            allowMultiAssignPanel.add(ASIOHost.Configs.allowChannelMultiAssign.displayer());
+
+            gbc.gridy += 1;
+            add(allowMultiAssignPanel, gbc);
         }
     }
 }

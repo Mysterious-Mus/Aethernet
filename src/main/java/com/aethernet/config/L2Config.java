@@ -31,7 +31,7 @@ import java.util.Scanner;
  *  1. declare it with ConfigTerm<T> class
  *  2. initialize it at the ctor Config() since some of them won't init properly before used
  *      also for proper update order
- *  2. add it with wanted order in panel
+ *  3. add it to panel
  */
 
 
@@ -43,9 +43,10 @@ public class L2Config {
     public static Map<String, ConfigTermTemplate> configTermsMap = new HashMap<String, ConfigTermTemplate>();
 
     /**
-     * A class to hold the name and value of a config term
-     * The Config class holds a reference of each and is in charge of
-     * modifying them during runtime parameter tuning
+     * VIEW 'STEPS TO ADD CONFIG' <hr>
+     * A class to hold the name and value of a config term <hr>
+     * The Config class holds a reference of each and is in charge of <hr>
+     * modifying them during runtime parameter tuning <hr>
      * 
      * NAME is supposed to be the variable name for the sake of maintenance
      */
@@ -159,6 +160,7 @@ public class L2Config {
         ConfigTermList.add(PhysicalManager.Configs.channelEnergy);
         ConfigTermList.add(PhysicalManager.Configs.channelClearThresh);
         ConfigTermList.add(MacManager.Configs.BACKOFF_AFTER_ACKED);
+        ConfigTermList.add(ASIOHost.Configs.allowChannelMultiAssign);
 
         LoadConfig();
 

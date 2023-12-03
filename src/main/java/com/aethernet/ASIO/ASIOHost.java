@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.Map;
 import java.nio.channels.AsynchronousFileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
@@ -37,6 +38,8 @@ public class ASIOHost implements AsioDriverListener{
                 return true;
             }
         };
+        public static ConfigTerm<Boolean> allowChannelMultiAssign =
+            new ConfigTerm<Boolean>("allowChannelMultiAssign", true, false);
     }
 
     private static AsioDriver asioDriver;
@@ -50,7 +53,7 @@ public class ASIOHost implements AsioDriverListener{
         public void handleNewBuffer(float[] newbuffer);
     }
 
-	private static Map<AsioChannel, NewBufferListener> receiveChannels = new HashMap<>();
+	private static Map<AsioChannel, Set<NewBufferListener>> receiveChannels = new HashMap<>();
 
 	public static Set<AsioChannel> availableInChannels = new HashSet<>();
 	public static Set<AsioChannel> availableOutChannels = new HashSet<>();
@@ -91,7 +94,8 @@ public class ASIOHost implements AsioDriverListener{
         // assign an empty player to the channel
         playChannels.put(channel, new Player());
         // maintain the available list
-        availableOutChannels.remove(channel);
+        if (!Configs.allowChannelMultiAssign.v())
+            availableOutChannels.remove(channel);
 	}
 
     /**
@@ -118,9 +122,10 @@ public class ASIOHost implements AsioDriverListener{
 
     public static void unregisterPlayer(AsioChannel channel) {
         if (channel == null) return;
-        playChannels.remove(channel);
+        // playChannels.remove(channel);
         // maintain the available list
-        availableOutChannels.add(channel);
+        if (!Configs.allowChannelMultiAssign.v())
+            availableOutChannels.add(channel);
     }
 
     /**
@@ -130,20 +135,26 @@ public class ASIOHost implements AsioDriverListener{
      */
 	public static void registerReceiver(AsioChannel channel, NewBufferListener listener) {
         if (channel == null) return;
-		receiveChannels.put(channel, listener);
+        if (receiveChannels.get(channel) == null)
+            receiveChannels.put(channel, new HashSet<>(Collections.singleton(listener)));
+        else {
+            receiveChannels.get(channel).add(listener);
+        }
         // maintain the available list
-        availableInChannels.remove(channel);
+        if (!Configs.allowChannelMultiAssign.v())
+            availableInChannels.remove(channel);
 	}
 
     /**
      * unregister a player
      * @param channel
      */
-    public static void unregisterReceiver(AsioChannel channel) {
+    public static void unregisterReceiver(AsioChannel channel, NewBufferListener listener) {
         if (channel == null) return;
-        receiveChannels.remove(channel);
+        receiveChannels.get(channel).remove(listener);
         // maintain the available list
-        availableInChannels.add(channel);
+        if (!Configs.allowChannelMultiAssign.v())
+            availableInChannels.add(channel);
     }
 
     /**
@@ -210,20 +221,13 @@ public class ASIOHost implements AsioDriverListener{
 		for (AsioChannel channel : receiveChannels.keySet()) {
 			// check if the channel exists
             if (channel == null) continue;
-			if (!channels.contains(channel)) {
-				// report channel not found
-				System.out.println("Channel " + channel + " not found.");
-				unregisterReceiver(channel);		
-			}
-			else {
-				// get the listener
-				NewBufferListener listener = receiveChannels.get(channel);
-				// read the content from the channel
-				float[] content = new float[bufferSize];
-				channel.read(content);
-				// invoke the listener
+            // read the content from the channel
+            float[] content = new float[bufferSize];
+            channel.read(content);
+            for (NewBufferListener listener : receiveChannels.get(channel)) {
+                // invoke the listener
                 listener.handleNewBuffer(content);
-			}
+            }
 		}
     }
 
