@@ -17,6 +17,7 @@ import com.aethernet.UI.panels.ChannelSelectPanel;
 import com.aethernet.config.L2Config;
 import com.aethernet.config.L2Config.ConfigTerm;
 import com.aethernet.mac.MacFrame;
+import com.aethernet.mac.MacFrame.Header;
 import com.aethernet.mac.MacManager.physicalCallback;
 import com.aethernet.physical.receive.Demodulator;
 import com.aethernet.physical.transmit.EthernetPacket;
@@ -293,9 +294,10 @@ public class PhysicalManager {
 
     ArrayList<Boolean> frameBuffer = new ArrayList<Boolean>();
     boolean headerReported = false;
+    int expectedFrameBitLen = 0;
     private void decode() {
         // decode till samples are used up or we have a frame
-        while (frameBuffer.size() < MacFrame.getFrameBitLen()) {
+        while (frameBuffer.size() < MacFrame.getMaxFrameBitLen()) {
             // get the next sample
             float[] symbolSamples = popNxtSample();
             if (symbolSamples == null) {
@@ -314,12 +316,14 @@ public class PhysicalManager {
         // otherwise this function can go on
         if (!headerReported && frameBuffer.size() >= MacFrame.Header.getNbit()) {
             headerReported = true;
-            macInterface.headerReceived(
-                new MacFrame.Header(
-                    TypeConvertion.booleanList2ByteArray(
-                        new ArrayList<>(frameBuffer.subList(0, MacFrame.Header.getNbit()))
-                    )
+            Header headerGot = new MacFrame.Header(
+                TypeConvertion.booleanList2ByteArray(
+                    new ArrayList<>(frameBuffer.subList(0, MacFrame.Header.getNbit()))
                 )
+            );
+            expectedFrameBitLen = MacFrame.getFrameBitLen(headerGot);
+            macInterface.headerReceived(
+                headerGot
             );
             // if now we don't have the permission to decode
             if (!permissions.decode.isPermitted()) {
@@ -333,9 +337,9 @@ public class PhysicalManager {
         }
 
         // if we gets a frame
-        if (frameBuffer.size() >= MacFrame.getFrameBitLen()) {
+        if (frameBuffer.size() >= expectedFrameBitLen) {
             // pop padding
-            while (frameBuffer.size() > MacFrame.getFrameBitLen()) {
+            while (frameBuffer.size() > expectedFrameBitLen) {
                 frameBuffer.remove(frameBuffer.size() - 1);
             }
             // convert to MacFrame

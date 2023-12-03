@@ -68,6 +68,6 @@ public class AetherRoute {
             }
         }
 
-        macManager = new MacManager((byte) 0xff, "AetherRoute", frameReceivedListener);
+        // macManager = new MacManager((byte) 0xff, "AetherRoute", frameReceivedListener);
     }
 }

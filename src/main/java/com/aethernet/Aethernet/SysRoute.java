@@ -51,10 +51,10 @@ public class SysRoute {
 
             if (aetherSubnet.matches(packet)) AetherRoute.send(packet);
 
-            System.out.println(nif.getDescription());
+            // System.out.println(nif.getDescription());
         }
 
-        PacketResolve.printIcmpInfo(packet);
+        // PacketResolve.printIcmpInfo(packet);
 
         for (AethHost host : Main.ipHosts) {
             if (PacketResolve.isPingingMe(packet, 

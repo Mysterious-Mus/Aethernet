@@ -282,10 +282,8 @@ public class MacManager {
             byte[] data = Arrays.copyOfRange(input, i * MacFrame.Configs.payloadMaxNumBytes.v(), 
                 Math.min((i + 1) * MacFrame.Configs.payloadMaxNumBytes.v(), input.length));
             
-            // padding
-            if (data.length < MacFrame.Configs.payloadMaxNumBytes.v()) {
-                data = Arrays.copyOf(data, MacFrame.Configs.payloadMaxNumBytes.v());
-            }
+            // correct Len field
+            header.SetField(MacFrame.Configs.HeaderFields.Len, (byte) data.length);
             // Add mac header
             // increment sequence number
             header.SetField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM, 
@@ -310,7 +308,7 @@ public class MacManager {
     public boolean interrupted = false;
     public void send(byte dstAddr, ArrayList<Boolean> bitString) {
         interrupted = false;
-        System.out.println("start sending data");
+        System.out.println(appName + " start sending data");
         // record time
         long startTime = System.currentTimeMillis();
         // make frame header
@@ -321,6 +319,10 @@ public class MacManager {
         header.SetField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM, (byte) -1);
 
         MacFrame[] frames = distribute(header, bitString);
+
+        if (frames.length > 1) {
+            System.out.println("Warning: the section is too long, it will be divided into " + frames.length + " frames");
+        }
 
         for (int frameID = 0; frameID < frames.length; frameID++) {
             sentSequenceNum = frames[frameID].getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM);

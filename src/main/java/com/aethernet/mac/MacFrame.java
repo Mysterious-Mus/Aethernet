@@ -7,6 +7,7 @@ import java.util.zip.CRC32;
 import javax.print.DocFlavor.BYTE_ARRAY;
 
 import com.aethernet.config.L2Config.ConfigTerm;
+import com.aethernet.mac.MacFrame.Configs.HeaderFields;
 import com.aethernet.physical.transmit.OFDM;
 import com.aethernet.utils.CRC8;
 import com.aethernet.utils.TypeConvertion;
@@ -39,7 +40,11 @@ public class MacFrame {
             Len,
             SEQUENCE_NUM, // to prevent the loss of ACK
             CRC8,
-            COUNT
+            COUNT;
+
+            public static int count() {
+                return COUNT.ordinal();
+            }
         }
 
         public static ConfigTerm<Integer> payloadMaxNumBytes = 
@@ -141,6 +146,7 @@ public class MacFrame {
 
     /**
      * Create the frame to be sent
+     * structure: header + data + CRC32
      * @param header
      * @param data
      */
@@ -162,40 +168,60 @@ public class MacFrame {
     }
 
     /** 
-     * Construct for receiver. Auto check CRC value, and the result stored in {@code is_valid}  
+     * Reconstruct the MacFrame from the byte array received
+     * Won't check CRC
      * @param array: byte array
      */
     public MacFrame (byte[] frameBuffer) {
         // sanity: length check
-        if (frameBuffer.length != getFrameBitLen() / 8) {
-            System.out.println("Error: frame length not match");
+        if (frameBuffer.length > getMaxFrameBitLen() / 8) {
+            System.out.println("Error: Exceeding max frame length");
             return;
         }
         this.wholeContents = frameBuffer;
         this.header = new Header(Arrays.copyOfRange(frameBuffer, 0, Configs.HeaderFields.COUNT.ordinal()));
     }
 
+    /** 
+     * Reconstruct the MacFrame from the byte array received
+     * Won't check CRC
+     * @param array: byte array
+     */
     public MacFrame (ArrayList<Boolean> frameBuffer) {
         this(TypeConvertion.booleanList2ByteArray(frameBuffer));
     }
 
     /**
-     * The Length of a mac frame
+     * The max number of bits contained in a frame
      */
-    public static int getFrameBitLen() {
-        return Configs.HeaderFields.COUNT.ordinal() * 8 + Configs.payloadMaxNumBytes.v() * 8 + 32;
+    public static int getMaxFrameBitLen() {
+        return Configs.HeaderFields.count() * 8 + Configs.payloadMaxNumBytes.v() * 8 + 32;
     }
-     
-    /** check CRC
-     * @return true if CRC is correct
+
+    /**
+     * The number of bits contained in a frame
+     */
+    public static int getFrameBitLen(Header header) {
+        int payloadNBytes = header.getField(HeaderFields.Len) & 0xFF;
+        return Configs.HeaderFields.count() * 8 + payloadNBytes * 8 + 32;
+    }
+    
+    /**
+     * check CRC, also check if the length of payload is correct(will report this one)
      */
     public boolean verify() {
+        if (!this.header.check()) return false;
+        int lenField = this.header.getField(HeaderFields.Len) & 0xFF;
+        if (lenField != this.wholeContents.length - 4 - HeaderFields.COUNT.ordinal())
+        {
+            System.out.println("Payload length incorrect");
+            return false;
+        }
         // CRC (32 bits)
         CRC32 crc = new CRC32();
         crc.update(Arrays.copyOfRange(this.wholeContents, Configs.HeaderFields.COUNT.ordinal(), this.wholeContents.length - 4));
         return crc.getValue() == TypeConvertion.byteArray2Long(
-            Arrays.copyOfRange(this.wholeContents, this.wholeContents.length - 4, this.wholeContents.length))
-            && this.header.check();
+            Arrays.copyOfRange(this.wholeContents, this.wholeContents.length - 4, this.wholeContents.length));
     }
 
     public byte[] getWhole() {

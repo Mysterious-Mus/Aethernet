@@ -83,8 +83,8 @@ public class Main {
         l2config = new L2Config();
         asioHost = new ASIOHost();
         
-        // txrxApps.add(new TxRx("TxRx 1", (byte) 0x00, (byte) 0x01));
-        // txrxApps.add(new TxRx("TxRx 2", (byte) 0x01, (byte) 0x00));
+        txrxApps.add(new TxRx("TxRx 1", (byte) 0x00, (byte) 0x01));
+        txrxApps.add(new TxRx("TxRx 2", (byte) 0x01, (byte) 0x00));
         
         ipHosts.add(new AethHost("AethHost_1"));
         ipHosts.add(new AethHost("AethHost_2"));

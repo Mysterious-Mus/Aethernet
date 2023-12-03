@@ -6,7 +6,11 @@ import java.util.Arrays;
 
 public class TypeConvertion {
 
-
+    /**
+     * Convert a boolean list to a byte array, padding 0s to the end
+     * @param booleanList
+     * @return
+     */
     public static byte[] booleanList2ByteArray(ArrayList<Boolean> booleanList) {
         byte[] byteArray = new byte[(booleanList.size() + 7) / 8];
         for (int i = 0; i < booleanList.size(); i++) {
