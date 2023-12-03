@@ -33,13 +33,17 @@ public class MacFrame {
             DEST_ADDR,
             SRC_ADDR,
             TYPE,
+            /**
+             * Payload length in bytes
+             */
+            Len,
             SEQUENCE_NUM, // to prevent the loss of ACK
             CRC8,
             COUNT
         }
 
-        public static ConfigTerm<Integer> payloadNumBytes = 
-            new ConfigTerm<Integer>("payloadNumBytes", 150, false)
+        public static ConfigTerm<Integer> payloadMaxNumBytes = 
+            new ConfigTerm<Integer>("payloadMaxNumBytes", 150, false)
         {
             @Override
             public boolean newValCheck(Integer value) {
@@ -179,7 +183,7 @@ public class MacFrame {
      * The Length of a mac frame
      */
     public static int getFrameBitLen() {
-        return Configs.HeaderFields.COUNT.ordinal() * 8 + Configs.payloadNumBytes.v() * 8 + 32;
+        return Configs.HeaderFields.COUNT.ordinal() * 8 + Configs.payloadMaxNumBytes.v() * 8 + 32;
     }
      
     /** check CRC

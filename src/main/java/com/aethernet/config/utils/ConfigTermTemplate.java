@@ -35,6 +35,7 @@ public class ConfigTermTemplate<T> {
                         set(newVal);
                     }
                     updDisp();
+                    changeCallback.callback();
                 });
             }
         }
@@ -125,7 +126,6 @@ public class ConfigTermTemplate<T> {
     public void set(T x) {
         value = x;
         displayer.updDisp();
-        changeCallback.callback();
         newvalOp(x);
     }
 

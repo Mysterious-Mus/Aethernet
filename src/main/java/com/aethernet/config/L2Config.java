@@ -88,7 +88,7 @@ public class L2Config {
             constructRow("bandWidthLowEdit", "bandWidthLow");
             constructRow("bandWidthHighEdit", "bandWidthHigh");
             constructRow("numSubCarriers", null);
-            constructRow("payloadNumBytes", null);
+            constructRow("payloadMaxNumBytes", null);
             constructRow("PSKeyingCapacity", "ASKeyingCapacity");
             constructRow("symbolCapacity", "SoF_amplitude");
             constructRow("SoF_T", "sofNSamples");
@@ -126,7 +126,7 @@ public class L2Config {
     public L2Config() {
         ConfigTermList.add(ASIOHost.Configs.sampleRate);
         ConfigTermList.add(ASIOHost.Configs.BUFFER_SIZE);
-        ConfigTermList.add(MacFrame.Configs.payloadNumBytes);
+        ConfigTermList.add(MacFrame.Configs.payloadMaxNumBytes);
         ConfigTermList.add(OFDM.Configs.subCarrierDist);
         ConfigTermList.add(OFDM.Configs.symbolLength);
         ConfigTermList.add(OFDM.Configs.subCarrierWidth);
@@ -197,7 +197,7 @@ public class L2Config {
             while (scanner.hasNextLine()) {
                 String[] line = scanner.nextLine().split(" ");
                 ConfigTermTemplate term = configTermsMap.get(line[0]);
-                term.set(line[1]);
+                if (term != null) term.set(line[1]);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

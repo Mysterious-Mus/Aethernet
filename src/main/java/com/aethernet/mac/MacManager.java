@@ -275,16 +275,16 @@ public class MacManager {
         /* break the large data into frames */
         byte[] input = TypeConvertion.booleanList2ByteArray(bitString);
 
-        int frameNum = Math.ceilDiv(input.length, MacFrame.Configs.payloadNumBytes.v());
+        int frameNum = Math.ceilDiv(input.length, MacFrame.Configs.payloadMaxNumBytes.v());
 
         MacFrame[] macFrames = new MacFrame[frameNum];
         for (int i = 0; i < frameNum; i++) {
-            byte[] data = Arrays.copyOfRange(input, i * MacFrame.Configs.payloadNumBytes.v(), 
-                Math.min((i + 1) * MacFrame.Configs.payloadNumBytes.v(), input.length));
+            byte[] data = Arrays.copyOfRange(input, i * MacFrame.Configs.payloadMaxNumBytes.v(), 
+                Math.min((i + 1) * MacFrame.Configs.payloadMaxNumBytes.v(), input.length));
             
             // padding
-            if (data.length < MacFrame.Configs.payloadNumBytes.v()) {
-                data = Arrays.copyOf(data, MacFrame.Configs.payloadNumBytes.v());
+            if (data.length < MacFrame.Configs.payloadMaxNumBytes.v()) {
+                data = Arrays.copyOf(data, MacFrame.Configs.payloadMaxNumBytes.v());
             }
             // Add mac header
             // increment sequence number

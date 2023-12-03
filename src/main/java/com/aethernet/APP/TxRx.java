@@ -81,7 +81,7 @@ public class TxRx {
         isReceiving = true;
         errPackCnt = 0;
         errCrcCnt = 0;
-        receiveLength = Math.ceilDiv(transmitted.size(), 8 * MacFrame.Configs.payloadNumBytes.v());
+        receiveLength = Math.ceilDiv(transmitted.size(), 8 * MacFrame.Configs.payloadMaxNumBytes.v());
     }
 
     public void transmit() {
@@ -249,21 +249,6 @@ public class TxRx {
             }
             
             if (failed) {
-            //     errPackCnt ++;
-            //     int groupLen = 40;
-            //     int packBitLen = MacFrame.Configs.payloadNumBytes.v() * 8;
-            //     System.out.println("GroupDiffs " + packIdx + ":");
-            //     for (int groupId = 0; groupId < Math.ceilDiv(packBitLen, groupLen); 
-            //     groupId++) {
-            //         int groupDiff = 0;
-            //         for (int i = 0; i < groupLen; i++) {
-            //             if (packIdx * packBitLen + groupId * groupLen + i < transmitted.size()) {
-            //                 groupDiff += transmitted.get(packIdx * packBitLen + groupId * groupLen + i) == 
-            //                     data.get(groupId * groupLen + i) ? 0 : 1;
-            //             }
-            //         }
-            //         System.out.print(groupDiff + " ");
-            //     }
                 System.out.println("package" + packIdx + " brute force check failed");
             }
 
@@ -276,7 +261,7 @@ public class TxRx {
                 assert(transmitted.size() % 8 == 0); // Transmitted data should be byte aligned
                 dataWrite = Arrays.copyOfRange(dataWrite,0, 
                                 transmitted.size() / 8 - 
-                                (receiveLength - 1) * MacFrame.Configs.payloadNumBytes.v());
+                                (receiveLength - 1) * MacFrame.Configs.payloadMaxNumBytes.v());
                 // stop receiving
                 isReceiving = false;
                 // print errPackCnt and errCrcCnt

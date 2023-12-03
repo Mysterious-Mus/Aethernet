@@ -1,6 +1,6 @@
 sampleRate 44100.0
 BUFFER_SIZE 256
-payloadNumBytes 502
+payloadMaxNumBytes 256
 subCarrierDist 1
 symbolLength 128
 cyclicPrefixLenth 0.0
