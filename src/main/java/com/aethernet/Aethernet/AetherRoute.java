@@ -10,12 +10,18 @@ import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
 
 import com.aethernet.Aethernet.SysRoute.adapterListenerThread;
+import com.aethernet.mac.MacFrame;
+import com.aethernet.mac.MacManager;
 import com.aethernet.Aethernet.SysRoute.Configs;
+import com.aethernet.mac.MacManager;
+import com.aethernet.mac.MacManager.FrameReceivedListener;
 
 public class AetherRoute {
 
     public static PcapNetworkInterface AethernetAdapter;
     public static PcapHandle AethernetHandle;
+
+    static MacManager macManager;
 
     public static void send(Packet packet) {
         System.out.println("a packet delivered into Aethernet");
@@ -28,8 +34,18 @@ public class AetherRoute {
             e.printStackTrace();
         }
     }
+    
+    static FrameReceivedListener frameReceivedListener = new FrameReceivedListener() {
+        @Override
+        public void frameReceived(MacFrame packet) {
+            System.out.println("Aethernet got a packet");
+        }
+    };
 
-    /* find the Aethernet adapter and open a handle for it */
+    /**
+     * find the Aethernet adapter and open a handle for it
+     * open a MacManager to forward packets 
+     */
     public static void init() {
         List<PcapNetworkInterface> allDevs = null;
         try {
@@ -38,7 +54,6 @@ public class AetherRoute {
         catch (PcapNativeException e) {
             e.printStackTrace();
         }
-
         for (PcapNetworkInterface device : allDevs) {
             if (device.getDescription().startsWith("Microsoft KM-TEST")) {
                 AethernetAdapter = device;
@@ -52,5 +67,7 @@ public class AetherRoute {
                 break;
             }
         }
+
+        macManager = new MacManager((byte) 0xff, "AetherRoute", frameReceivedListener);
     }
 }

@@ -35,7 +35,6 @@ public class ConfigTermTemplate<T> {
                         set(newVal);
                     }
                     updDisp();
-                    changeCallback.callback();
                 });
             }
         }
@@ -126,12 +125,25 @@ public class ConfigTermTemplate<T> {
     public void set(T x) {
         value = x;
         displayer.updDisp();
+        changeCallback.callback();
+        newvalOp(x);
+    }
+
+    /**
+     * for some config instances, this function can be overridden
+     * it will be called whenever the config changes
+     */
+    public void newvalOp(T x) {
     }
 
     public void set(String x) {
         set(fromString(x));
     }
 
+    /**
+     * for passive parameters, this function should be overridden <hr>
+     * specifying how to update the value as an anonymous class for each instance
+    */
     public void PassiveParamUpdVal() {
         // print not implemented
         System.out.println("PassiveParamUpdVal not implemented: " + name);
