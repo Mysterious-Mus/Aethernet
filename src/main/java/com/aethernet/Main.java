@@ -31,7 +31,7 @@ public class Main {
     ASIOHost asioHost;
     EthHost ethHost;
     public static ArrayList<TxRx> txrxApps = new ArrayList<TxRx>();
-    public static ArrayList<AethHost> ipHosts = new ArrayList<AethHost>();
+    AethHost me, far;
 
     public static void AllStop() {
         for (TxRx txrx : txrxApps) {
@@ -86,12 +86,12 @@ public class Main {
         // txrxApps.add(new TxRx("TxRx 1", (byte) 0x00, (byte) 0x01));
         // txrxApps.add(new TxRx("TxRx 2", (byte) 0x01, (byte) 0x00));
         
-        ipHosts.add(new AethHost("AethHost_1"));
-        ipHosts.add(new AethHost("AethHost_2"));
+        me = new AethHost("AethHost_me"); // assigned to the aetherRouter
+        far = new AethHost("AethHost_far"); // for experiment
         // because of java lazy initialization, now the parameters of ipHost are
         // initialized in the ctor of IPHost
         ethConfig = new EthConfig();
-        AetherRoute.init();
+        AetherRoute.init(me);
         SysRoute.start();
         // ui should be launched last because it has to collect all the panels,
         // also, it should wait for other threads to be ready

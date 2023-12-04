@@ -4,14 +4,23 @@ import javax.swing.JPanel;
 import java.awt.*;
 import javax.swing.*;
 
+import com.aethernet.Aethernet.utils.IPAddr;
+import com.aethernet.Aethernet.utils.PacketCreate;
+import com.aethernet.Aethernet.utils.PacketResolve;
 import com.aethernet.UI.EthHost;
 import com.aethernet.config.EthConfig.ConfigTerm;
-import com.aethernet.config.utils.ConfigTermTemplate;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;
+import com.aethernet.mac.MacFrame.Configs.HeaderFields;
 import com.aethernet.mac.MacManager.FrameReceivedListener;
 
+import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.IcmpV4DestinationUnreachablePacket.IcmpV4DestinationUnreachableHeader;
+import org.pcap4j.packet.factory.PacketFactories;
+import org.pcap4j.packet.namednumber.EtherType;
+import org.pcap4j.packet.namednumber.IcmpV4Code;
+import org.pcap4j.packet.namednumber.NotApplicable;
 
 public class AethHost {
     
@@ -20,7 +29,7 @@ public class AethHost {
     public ConfigTerm<String> ipAddr;
     public ConfigTerm<Byte> macAddr;
 
-    MacManager macManager;
+    public MacManager macManager;
 
     public class ControlPanel extends JPanel {
         public ControlPanel() {
@@ -46,8 +55,19 @@ public class AethHost {
 
     FrameReceivedListener frameReceivedListener = new FrameReceivedListener() {
         @Override
-        public void frameReceived(MacFrame packet) {
-            System.out.println("IPHost: " + name + " got a packet");
+        public void frameReceived(MacFrame macPacket) {
+            byte[] data = macPacket.getData(); // your byte array
+            Packet packet = PacketResolve.byteArr2Packet(data);
+            AetherRoute.receive(packet);
+
+            // reply if ping me
+            if (PacketResolve.isPingingMe(packet, IPAddr.buildV4FromStr(ipAddr.v()))) {
+                Packet replyPacket = PacketCreate.createReplyPacket((EthernetPacket) packet);
+                macManager.sendNoWait(
+                    macPacket.getHeader().getField(HeaderFields.SRC_ADDR), 
+                    replyPacket.getRawData());
+                AetherRoute.replyReport(replyPacket);
+            }
         }
     };
 

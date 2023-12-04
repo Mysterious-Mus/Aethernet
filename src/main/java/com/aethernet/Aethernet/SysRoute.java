@@ -45,27 +45,16 @@ public class SysRoute {
     public static Inet4Address ipAddr = IPAddr.buildV4FromStr("192.168.111.10");
     // public static Inet4Address ipAddr = IPAddr.buildV4FromStr("1.1.1.1");
 
-    private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
+    private static void adapterReceiveHandler(PcapHandle handle, Packet packet) {
         
         if (PacketResolve.isIcmpPing(packet)) {
-
-            if (aetherSubnet.matches(packet)) AetherRoute.send(packet);
-
-            // System.out.println(nif.getDescription());
-        }
-
-        // PacketResolve.printIcmpInfo(packet);
-
-        for (AethHost host : Main.ipHosts) {
-            if (PacketResolve.isPingingMe(packet, 
-                IPAddr.buildV4FromStr(host.ipAddr.v()))) {
-                host.pingMeHandler(packet);
-            }
+            if (aetherSubnet.matches(packet)) AetherRoute.deliver(handle, packet);
         }
     }
 
     static class adapterListenerThread extends Thread {
         PcapNetworkInterface device;
+        PcapHandle handle;
         public adapterListenerThread(PcapNetworkInterface device) {
             this.device = device;
         }
@@ -73,12 +62,13 @@ public class SysRoute {
         @Override
         public void run() {
             try {
-                final PcapHandle handle = device.openLive(
+                handle = device.openLive(
                     Configs.SNAPLEN, PromiscuousMode.PROMISCUOUS, Configs.READ_TIMEOUT);
+                
                 handle.loop(-1, new PacketListener() {
                     @Override
                     public void gotPacket(Packet packet) {
-                        adapterReceiveHandler(device, packet);
+                        adapterReceiveHandler(handle, packet);
                     }
                 });
             } catch (PcapNativeException | NotOpenException | InterruptedException e) {

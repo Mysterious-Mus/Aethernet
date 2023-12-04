@@ -1,4 +1,4 @@
-AethHost_2.macAddr 2
-AethHost_1.macAddr 1
-AethHost_1.ipAddr 172.0.0.1
-AethHost_2.ipAddr 172.0.0.2
+AethHost_me.ipAddr 172.0.0.1
+AethHost_me.macAddr 1
+AethHost_far.ipAddr 172.0.0.2
+AethHost_far.macAddr 2

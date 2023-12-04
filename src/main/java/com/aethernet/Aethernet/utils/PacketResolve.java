@@ -7,6 +7,8 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.namednumber.EtherType;
+import org.pcap4j.packet.namednumber.IcmpV4Type;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import java.net.Inet4Address;
@@ -15,6 +17,16 @@ import org.pcap4j.packet.IcmpV4CommonPacket;
 import org.pcap4j.packet.IcmpV4EchoPacket;
 
 public class PacketResolve {
+    public static Packet byteArr2Packet(byte[] data) {
+        try {
+            EthernetPacket ethernetPacket = EthernetPacket.newPacket(data, 0, data.length);
+            return ethernetPacket;
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
     public static boolean isIcmpPing(Packet packet) { 
         if(packet.contains(IcmpV4CommonPacket.class)) {
             return true;
@@ -46,8 +58,8 @@ public class PacketResolve {
             if (dstAddr.equals(myIp)) {
                 if (packet.contains(IcmpV4CommonPacket.class)) {
                     IcmpV4CommonPacket icmpV4CommonPacket = packet.get(IcmpV4CommonPacket.class);
-                    // if it is ping request
-                    if (icmpV4CommonPacket.contains(IcmpV4EchoPacket.class)) {
+                    // if type is echo
+                    if (icmpV4CommonPacket.getHeader().getType() == IcmpV4Type.ECHO) {
                         return true;
                     }
                 }

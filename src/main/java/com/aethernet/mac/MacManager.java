@@ -167,7 +167,6 @@ public class MacManager {
                 case RECEIVING_PAYLOAD:
                 
                     if (frame.verify() && frame.getHeader().getField(MacFrame.Configs.HeaderFields.DEST_ADDR) == ADDR) {
-                        frameReceivedListener.frameReceived(frame);
                         // send ack
                         state = State.SENDING_ACK;
                         MacFrame.Header ackHeader = new MacFrame.Header();
@@ -183,30 +182,14 @@ public class MacManager {
                             );
                         // print who ack which packet
                         System.out.println(appName + " ack " + frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) + " sent");
-                        // start a new thread to send ack when idle
-                        // new Thread(new Runnable() {
-                        //     @Override
-                        //     public void run() {
-                        //         idleNot.waitTillPermitted();
-                        //         physicalManager.permissions.detect.unpermit();
-                        //         physicalManager.permissions.decode.unpermit();
-                        //         idleNot.unpermit();
-                        //         state = State.SENDING;
-
-                        //         physicalManager.send(ackFrame);
-
-                        //         physicalManager.permissions.detect.permit();
-                        //         physicalManager.permissions.decode.unpermit();
-                        //         idleNot.permit();
-                        //         state = State.IDLE;
-                        //     }
-                        // }).start();
                         physicalManager.send(ackFrame);
 
                         physicalManager.permissions.detect.permit();
                         physicalManager.permissions.decode.unpermit();
                         idleNot.permit();
                         state = State.IDLE;
+
+                        frameReceivedListener.frameReceived(frame);
                     }
                     else {
                         // not my frame or broken frame
@@ -307,7 +290,7 @@ public class MacManager {
     byte sentSequenceNum;
     boolean ackReceived = false;
     public boolean interrupted = false;
-    public void send(byte dstAddr, ArrayList<Boolean> bitString) {
+    public synchronized void send(byte dstAddr, ArrayList<Boolean> bitString) {
         interrupted = false;
         System.out.println(appName + " start sending data");
         // record time
@@ -400,7 +383,7 @@ public class MacManager {
         send(dstAddr, bitString);
     }
 
-    public void sendParallel(byte dstAddr, byte[] data) {
+    public void sendNoWait(byte dstAddr, byte[] data) {
         new Thread(new Runnable() {
             @Override
             public void run() {

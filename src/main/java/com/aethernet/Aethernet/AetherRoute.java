@@ -1,6 +1,9 @@
 package com.aethernet.Aethernet;
 
 import java.util.List;
+import java.net.Inet4Address;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PcapHandle;
@@ -10,6 +13,7 @@ import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
 
 import com.aethernet.Aethernet.SysRoute.adapterListenerThread;
+import com.aethernet.Aethernet.utils.PacketResolve;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;
 import com.aethernet.Aethernet.SysRoute.Configs;
@@ -27,11 +31,24 @@ public class AetherRoute {
     public static PcapHandle AethernetHandle;
 
     static Byte Mac = (byte) 0xff;
-    static MacManager macManager;
+    static AethHost me;
     static ARPTable arpTable;
 
-    public static void send(Packet packet) {
+    /**
+     * reply packets should be delivered to the same adapter
+     */
+    static Map<Inet4Address, PcapHandle> replyMap = new HashMap<Inet4Address, PcapHandle>();
+
+    /**
+     * deliver a packet into Aethernet
+     * also remembering the handle to reply to the adapter
+     * @param srcHandle
+     * @param packet
+     */
+    public static void deliver(PcapHandle srcHandle, Packet packet) {
         System.out.println("a packet delivered into Aethernet");
+
+        replyMap.put(PacketResolve.getSrcIP(packet), srcHandle);
 
         // feed into Aethernet adapter, then wireshark can monitor the traffic
         try {
@@ -49,21 +66,51 @@ public class AetherRoute {
             return;
         }
         System.out.println("sending to " + dstMac);
-        macManager.sendParallel(dstMac, packet.getRawData());
+        me.macManager.sendNoWait(dstMac, packet.getRawData());
     }
-    
-    static FrameReceivedListener frameReceivedListener = new FrameReceivedListener() {
-        @Override
-        public void frameReceived(MacFrame packet) {
-            System.out.println("Aethernet router got a packet");
+
+    /**
+     * if an aether host receives a packet from aethernet,
+     * it should call this function to feed the packet into the adapter
+     */
+    public static void receive(Packet packet) {
+        try {
+            AethernetHandle.sendPacket(packet);
         }
-    };
+        catch (PcapNativeException | NotOpenException e) {
+            e.printStackTrace();
+        }
+
+        PcapHandle replyHandle = replyMap.get(PacketResolve.getDstIP(packet));
+        if (replyHandle != null)
+            try {
+            replyHandle.sendPacket(packet);
+            }
+            catch (PcapNativeException | NotOpenException e) {
+                e.printStackTrace();
+            }
+    }
+
+    /**
+     * if an aether host sends a packet to aethernet, (raised by itself, can only be replying),
+     * it should call this function to feed the packet into the adapter
+     */
+    public static void replyReport(Packet packet) {
+        try {
+            AethernetHandle.sendPacket(packet);
+        }
+        catch (PcapNativeException | NotOpenException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * find the Aethernet adapter and open a handle for it
      * open a MacManager to forward packets 
      */
-    public static void init() {
+    public static void init(AethHost hostAssigned) {
+        me = hostAssigned;
+
         List<PcapNetworkInterface> allDevs = null;
         try {
             allDevs = Pcaps.findAllDevs();
@@ -86,6 +133,5 @@ public class AetherRoute {
         }
 
         arpTable = new ARPTable();
-        macManager = new MacManager(Mac, "AetherRoute", frameReceivedListener);
     }
 }

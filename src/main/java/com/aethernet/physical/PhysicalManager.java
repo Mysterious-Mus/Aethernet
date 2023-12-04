@@ -20,7 +20,7 @@ import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacFrame.Header;
 import com.aethernet.mac.MacManager.physicalCallback;
 import com.aethernet.physical.receive.Demodulator;
-import com.aethernet.physical.transmit.EthernetPacket;
+import com.aethernet.physical.transmit.AetherPacker;
 import com.aethernet.physical.transmit.OFDM;
 import com.aethernet.physical.transmit.SoF;
 import com.aethernet.utils.CyclicBuffer;
@@ -224,7 +224,7 @@ public class PhysicalManager {
      * @return void
      */
     public void send(MacFrame macframe) {
-        float [] samples = EthernetPacket.getPacket(macframe.getWhole());
+        float [] samples = AetherPacker.pack(macframe.getWhole());
 
         // wait till the samples are played
         ASIOHost.waitTransmit(sendChannel);
@@ -308,45 +308,46 @@ public class PhysicalManager {
             ArrayList<Boolean> bits = Demodulator.demodulateSymbol(symbolSamples);
             // add the bits to the frameBuffer
             frameBuffer.addAll(bits);
-        }
-
-        if (!permissions.decode.isPermitted()) return;
-        // if we get enough for a header, report to MAC
-        // if the header is already wrong or is ack, don't do full frame got report
-        // otherwise this function can go on
-        if (!headerReported && frameBuffer.size() >= MacFrame.Header.getNbit()) {
-            headerReported = true;
-            Header headerGot = new MacFrame.Header(
-                TypeConvertion.booleanList2ByteArray(
-                    new ArrayList<>(frameBuffer.subList(0, MacFrame.Header.getNbit()))
-                )
-            );
-            expectedFrameBitLen = MacFrame.getFrameBitLen(headerGot);
-            macInterface.headerReceived(
-                headerGot
-            );
-            // if now we don't have the permission to decode
-            if (!permissions.decode.isPermitted()) {
-                // // print message
-                // System.out.println("Error: decodeThread: header received but decode is not permitted");
-                // clear frameBuffer
-                frameBuffer.clear();
-                headerReported = false;
-                return;
+            
+            if (!permissions.decode.isPermitted()) return;
+            // if we get enough for a header, report to MAC
+            // if the header is already wrong or is ack, don't do full frame got report
+            // otherwise this function can go on
+            if (!headerReported && frameBuffer.size() >= MacFrame.Header.getNbit()) {
+                headerReported = true;
+                Header headerGot = new MacFrame.Header(
+                    TypeConvertion.booleanList2ByteArray(
+                        new ArrayList<>(frameBuffer.subList(0, MacFrame.Header.getNbit()))
+                    )
+                );
+                expectedFrameBitLen = MacFrame.getFrameBitLen(headerGot);
+                macInterface.headerReceived(
+                    headerGot
+                );
+                // if now we don't have the permission to decode
+                if (!permissions.decode.isPermitted()) {
+                    // // print message
+                    // System.out.println("Error: decodeThread: header received but decode is not permitted");
+                    // clear frameBuffer
+                    frameBuffer.clear();
+                    headerReported = false;
+                    return;
+                }
+            }
+    
+            // if we gets a frame
+            if (frameBuffer.size() >= expectedFrameBitLen) {
+                // pop padding
+                while (frameBuffer.size() > expectedFrameBitLen) {
+                    frameBuffer.remove(frameBuffer.size() - 1);
+                }
+                // convert to MacFrame
+                MacFrame frame = new MacFrame(frameBuffer);
+                // invoke callback
+                macInterface.frameReceived(frame);
             }
         }
 
-        // if we gets a frame
-        if (frameBuffer.size() >= expectedFrameBitLen) {
-            // pop padding
-            while (frameBuffer.size() > expectedFrameBitLen) {
-                frameBuffer.remove(frameBuffer.size() - 1);
-            }
-            // convert to MacFrame
-            MacFrame frame = new MacFrame(frameBuffer);
-            // invoke callback
-            macInterface.frameReceived(frame);
-        }
     }
 
     private float[] popNxtSample() {

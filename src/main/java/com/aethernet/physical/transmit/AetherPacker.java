@@ -13,14 +13,14 @@ import com.aethernet.utils.TypeConvertion;
  * 2. Length of bit string: 32 bits
  * 3. Bit string
  */
-public class EthernetPacket {
+public class AetherPacker {
     /**
      * Get the packet to be sent to 
      * Recieve a mac frame
      * @param MacFrame
      * @return {@code float[]} packet samples to physical layer
      */
-    public static float[] getPacket(byte[] MacFrame) {
+    public static float[] pack(byte[] MacFrame) {
         /* 
         * Input: frame from mac layer
         * Modulate the packet using OFDM (byte[] -> float[])
