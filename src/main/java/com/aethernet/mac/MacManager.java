@@ -378,7 +378,8 @@ public class MacManager {
                                         (System.currentTimeMillis() - startTime) 
                                         + " time estimated: " + 
                             (System.currentTimeMillis() - startTime) * (frames.length) / (frameID + 1) + 
-                            " Resend times: " + backoffTimes);
+                            " Resend times: " + backoffTimes + " payload length: " + 
+                            TypeConvertion.unsignedByteToInt(frames[frameID].getHeader().getField(MacFrame.Configs.HeaderFields.Len)));
                     // wait a while, others may want to send
                     idleNot.waitTillPermitted();
                     if(frameID < frames.length - 1) {try {

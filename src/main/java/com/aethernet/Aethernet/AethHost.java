@@ -7,6 +7,9 @@ import javax.swing.*;
 import com.aethernet.UI.EthHost;
 import com.aethernet.config.EthConfig.ConfigTerm;
 import com.aethernet.config.utils.ConfigTermTemplate;
+import com.aethernet.mac.MacFrame;
+import com.aethernet.mac.MacManager;
+import com.aethernet.mac.MacManager.FrameReceivedListener;
 
 import org.pcap4j.packet.Packet;
 
@@ -14,8 +17,10 @@ public class AethHost {
     
     String name;
 
-    public ConfigTermTemplate<String> ipAddr;
-    public ConfigTermTemplate<Byte> macAddr;
+    public ConfigTerm<String> ipAddr;
+    public ConfigTerm<Byte> macAddr;
+
+    MacManager macManager;
 
     public class ControlPanel extends JPanel {
         public ControlPanel() {
@@ -39,13 +44,27 @@ public class AethHost {
     }
     public ControlPanel controlPanel;
 
+    FrameReceivedListener frameReceivedListener = new FrameReceivedListener() {
+        @Override
+        public void frameReceived(MacFrame packet) {
+            System.out.println("IPHost: " + name + " got a packet");
+        }
+    };
+
     public AethHost(String hostName) {
         this.name = hostName;
         ipAddr = new ConfigTerm<String>(hostName + ".ipAddr", "172.0.0.1", false);
-        macAddr = new ConfigTerm<Byte>(hostName + ".macAddr", (byte) 1, false);
+        macAddr = new ConfigTerm<Byte>(hostName + ".macAddr", (byte) 1, false) {
+            @Override
+            public void newvalOp(Byte newVal) {
+                macManager.syncAddr(newVal);
+            }
+        };
 
         controlPanel = new ControlPanel();
         EthHost.controlPanels.add(controlPanel);
+
+        macManager = new MacManager(macAddr.v(), name, frameReceivedListener);
     }
 
     public void pingMeHandler(Packet packet) {

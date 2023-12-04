@@ -75,4 +75,8 @@ public class TypeConvertion {
         }
         return res;
     }
+
+    public static int unsignedByteToInt(byte b) {
+        return (int) b & 0xFF;
+    }
 }
