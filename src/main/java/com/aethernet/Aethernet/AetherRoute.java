@@ -20,6 +20,7 @@ import com.aethernet.mac.MacManager;
 import com.aethernet.Aethernet.SysRoute.Configs;
 import com.aethernet.mac.MacManager;
 import com.aethernet.mac.MacManager.FrameReceivedListener;
+import com.aethernet.Aethernet.utils.IPAddr;
 
 /**
  * Since each Aethernet host may start a ping from its cmd,
@@ -29,6 +30,10 @@ import com.aethernet.mac.MacManager.FrameReceivedListener;
 public class AetherRoute {
 
     public static ConfigTerm<Boolean> asGateway;
+    
+    // hardcode
+    public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.0.0.1");
+    public static Byte gatewayMac = 0x02;
 
     public static PcapNetworkInterface AethernetAdapter;
     public static PcapHandle AethernetHandle;
@@ -66,7 +71,14 @@ public class AetherRoute {
         Byte dstMac = arpTable.query(packet);
         if (dstMac == null) {
             System.out.println("Aethernet router: arp not found");
-            return;
+            if (asGateway.v()) {
+                // TODO
+                return;
+            }
+            else {
+                // go to gateway
+                dstMac = gatewayMac;
+            }
         }
         System.out.println("sending to " + dstMac);
         me.macManager.sendNoWait(dstMac, packet.getRawData());
@@ -87,14 +99,18 @@ public class AetherRoute {
         PcapHandle replyHandle = replyMap.get(PacketResolve.getDstIP(packet));
         if (replyHandle != null)
             try {
-            replyHandle.sendPacket(packet);
+                replyHandle.sendPacket(packet);
             }
             catch (PcapNativeException | NotOpenException e) {
                 e.printStackTrace();
             }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet
+            // might be a packet from a non-gateway host to ping outside
             // TODO: 
+            if (asGateway.v()) {
+                System.out.println(packet);
+            }
         }
     }
 
@@ -117,7 +133,14 @@ public class AetherRoute {
      */
     public static void init(AethHost hostAssigned) {
         me = hostAssigned;
-        asGateway = new ConfigTerm<Boolean>("asGateway", true, false);
+        asGateway = new ConfigTerm<Boolean>("asGateway", true, false) {
+            @Override
+            public void newvalOp(Boolean newv) {
+                if (newv) {
+                    System.out.println("The current host is the gateway, check address!");
+                }
+            }
+        };
 
         List<PcapNetworkInterface> allDevs = null;
         try {

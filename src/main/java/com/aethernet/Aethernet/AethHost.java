@@ -7,7 +7,7 @@ import javax.swing.*;
 import com.aethernet.Aethernet.utils.IPAddr;
 import com.aethernet.Aethernet.utils.PacketCreate;
 import com.aethernet.Aethernet.utils.PacketResolve;
-import com.aethernet.UI.EthHost;
+import com.aethernet.UI.EthUIHost;
 import com.aethernet.config.EthConfig.ConfigTerm;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;
@@ -82,7 +82,7 @@ public class AethHost {
         };
 
         controlPanel = new ControlPanel();
-        EthHost.controlPanels.add(controlPanel);
+        EthUIHost.controlPanels.add(controlPanel);
 
         macManager = new MacManager(macAddr.v(), name, frameReceivedListener);
     }

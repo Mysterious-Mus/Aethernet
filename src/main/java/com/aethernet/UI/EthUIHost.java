@@ -14,7 +14,7 @@ import java.awt.event.*;
 
 import java.util.*;
 
-public class EthHost extends JFrame{
+public class EthUIHost extends JFrame{
     
     L2Host l2Host;
     public static ArrayList<JPanel> controlPanels = new ArrayList<JPanel>();
@@ -66,7 +66,7 @@ public class EthHost extends JFrame{
         this.setVisible(true);
     }
 
-    public EthHost() {
+    public EthUIHost() {
         l2Host = new L2Host();
         layoutPanel();
     }

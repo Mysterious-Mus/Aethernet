@@ -10,7 +10,7 @@ import com.aethernet.Aethernet.ARPTable;
 import com.aethernet.Aethernet.AetherRoute;
 import com.aethernet.Aethernet.AethHost;
 import com.aethernet.Aethernet.SysRoute;
-import com.aethernet.UI.EthHost;
+import com.aethernet.UI.EthUIHost;
 import com.aethernet.config.EthConfig;
 import com.aethernet.config.L2Config;
 import com.aethernet.mac.MacManager;
@@ -29,7 +29,7 @@ public class Main {
     public static AddrAlloc addrAlloc = new AddrAlloc();
 
     ASIOHost asioHost;
-    EthHost ethHost;
+    EthUIHost ethHost;
     public static ArrayList<TxRx> txrxApps = new ArrayList<TxRx>();
     AethHost me, far;
 
@@ -88,14 +88,14 @@ public class Main {
         
         me = new AethHost("AethHost_me"); // assigned to the aetherRouter
         // far = new AethHost("AethHost_far"); // for experiment
-        // because of java lazy initialization, now the parameters of ipHost are
-        // initialized in the ctor of IPHost
-        ethConfig = new EthConfig();
         AetherRoute.init(me);
         SysRoute.start();
+        // because of java lazy initialization, now the parameters of ipHost are
+        // initialized in the ctors
+        ethConfig = new EthConfig();
         // ui should be launched last because it has to collect all the panels,
         // also, it should wait for other threads to be ready
-        ethHost = new EthHost();
+        ethHost = new EthUIHost();
     }
 
     public static void main(String[] args) {
