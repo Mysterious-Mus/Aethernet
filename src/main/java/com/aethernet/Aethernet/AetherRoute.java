@@ -14,6 +14,7 @@ import org.pcap4j.packet.Packet;
 
 import com.aethernet.Aethernet.SysRoute.adapterListenerThread;
 import com.aethernet.Aethernet.utils.PacketResolve;
+import com.aethernet.config.EthConfig.ConfigTerm;
 import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;
 import com.aethernet.Aethernet.SysRoute.Configs;
@@ -26,6 +27,8 @@ import com.aethernet.mac.MacManager.FrameReceivedListener;
  * packets from the adapter the system uses to the Aethernet
  */
 public class AetherRoute {
+
+    public static ConfigTerm<Boolean> asGateway;
 
     public static PcapNetworkInterface AethernetAdapter;
     public static PcapHandle AethernetHandle;
@@ -114,6 +117,7 @@ public class AetherRoute {
      */
     public static void init(AethHost hostAssigned) {
         me = hostAssigned;
+        asGateway = new ConfigTerm<Boolean>("asGateway", true, false);
 
         List<PcapNetworkInterface> allDevs = null;
         try {

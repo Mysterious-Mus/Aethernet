@@ -34,6 +34,10 @@ public class PacketResolve {
         return false;
     }
 
+    public static boolean isIcmp(Packet packet) {
+        return packet.contains(IcmpV4CommonPacket.class);
+    }
+
     public static void printIcmpInfo(Packet packet) {
         if (!isIcmpPing(packet)) {
             return;

@@ -52,24 +52,6 @@ public class EthConfig {
             loadAndDump.add(new LoadButton()); loadAndDump.add(new DumpButton());
             this.add(loadAndDump);
         }
-
-        private void constructRow(String paramName1, String paramName2) {
-            JPanel row = new JPanel();
-            row.setLayout(new GridLayout(0, 4));
-            if (paramName1 != null) {
-                row.add(new JLabel(paramName1)); row.add(configTermsMap.get(paramName1).displayer());
-            }
-            else {
-                row.add(new JLabel()); row.add(new JLabel());
-            }
-            if (paramName2 != null) {
-                row.add(new JLabel(paramName2)); row.add(configTermsMap.get(paramName2).displayer());
-            }
-            else {
-                row.add(new JLabel()); row.add(new JLabel());
-            }
-            this.add(row);
-        }
     }
     public static ConfigPanel panel;
 

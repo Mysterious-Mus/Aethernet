@@ -47,9 +47,13 @@ public class SysRoute {
     // public static Inet4Address ipAddr = IPAddr.buildV4FromStr("1.1.1.1");
 
     private static void adapterReceiveHandler(PcapHandle handle, Packet packet) {
-        
-        if (PacketResolve.isIcmpPing(packet)) {
+        if (!PacketResolve.isIcmp(packet)) return;
+
+        if (AetherRoute.asGateway.v()) {
             if (aetherSubnet.matches(packet)) AetherRoute.deliver(handle, packet);
+        }
+        else {
+            AetherRoute.deliver(handle, packet);
         }
     }
 
