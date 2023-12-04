@@ -87,7 +87,7 @@ public class Main {
         // txrxApps.add(new TxRx("TxRx 2", (byte) 0x01, (byte) 0x00));
         
         me = new AethHost("AethHost_me"); // assigned to the aetherRouter
-        far = new AethHost("AethHost_far"); // for experiment
+        // far = new AethHost("AethHost_far"); // for experiment
         // because of java lazy initialization, now the parameters of ipHost are
         // initialized in the ctor of IPHost
         ethConfig = new EthConfig();
