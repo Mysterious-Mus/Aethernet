@@ -10,7 +10,9 @@ import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.Pcaps;
+import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.EthernetPacket.EthernetHeader;
 
 import com.aethernet.Aethernet.SysRoute.adapterListenerThread;
 import com.aethernet.Aethernet.utils.PacketResolve;
@@ -21,6 +23,7 @@ import com.aethernet.Aethernet.SysRoute.Configs;
 import com.aethernet.mac.MacManager;
 import com.aethernet.mac.MacManager.FrameReceivedListener;
 import com.aethernet.Aethernet.utils.IPAddr;
+import com.aethernet.Aethernet.utils.PacketCreate;
 
 /**
  * Since each Aethernet host may start a ping from its cmd,
@@ -43,20 +46,18 @@ public class AetherRoute {
     static ARPTable arpTable;
 
     /**
-     * reply packets should be delivered to the same adapter
-     */
-    static Map<Inet4Address, PcapHandle> replyMap = new HashMap<Inet4Address, PcapHandle>();
-
-    /**
      * deliver a packet into Aethernet
      * also remembering the handle to reply to the adapter
      * @param srcHandle
      * @param packet
      */
-    public static void deliver(PcapHandle srcHandle, Packet packet) {
+    public static void deliver(Packet packet) {
         System.out.println("a packet delivered into Aethernet");
 
-        replyMap.put(PacketResolve.getSrcIP(packet), srcHandle);
+        // if src is my internet IP, then translate into my aethernet ip
+        if (PacketResolve.getSrcIP(packet).equals(SysRoute.internetIP)) {
+            packet = PacketCreate.changeSrcIp((EthernetPacket) packet, me.ipAddr.v());
+        }
 
         // feed into Aethernet adapter, then wireshark can monitor the traffic
         try {
@@ -96,20 +97,25 @@ public class AetherRoute {
             e.printStackTrace();
         }
 
-        PcapHandle replyHandle = replyMap.get(PacketResolve.getDstIP(packet));
-        if (replyHandle != null)
+        if (PacketResolve.getDstIP(packet).equals(
+            IPAddr.buildV4FromStr(me.ipAddr.v())))
+        {
+            // I get an Aethernet packet to me. Maybe I should feed it into
+            // internet handle to respond system ack or so
             try {
-                replyHandle.sendPacket(packet);
+                SysRoute.internetHandle.sendPacket(
+                    PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                );
             }
             catch (PcapNativeException | NotOpenException e) {
                 e.printStackTrace();
             }
+        }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet
             // might be a packet from a non-gateway host to ping outside
             // TODO: 
             if (asGateway.v()) {
-                System.out.println(packet);
             }
         }
     }

@@ -65,4 +65,40 @@ public class PacketCreate {
 
         return ethBuilder.build();
     }
+
+    public static EthernetPacket changeSrcIp(EthernetPacket original, Inet4Address newSrc) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+        ipV4Builder = ipV4Builder
+            .srcAddr(newSrc)
+            .correctChecksumAtBuild(true);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
+    public static EthernetPacket changeSrcIp(EthernetPacket original, String newSrc) {
+        return changeSrcIp(original, IPAddr.buildV4FromStr(newSrc));
+    }
+
+    public static EthernetPacket changeDstIp(EthernetPacket original, Inet4Address newDst) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+        ipV4Builder = ipV4Builder
+            .dstAddr(newDst)
+            .correctChecksumAtBuild(true);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
+    public static EthernetPacket changeDstIp(EthernetPacket original, String newDst) {
+        return changeDstIp(original, IPAddr.buildV4FromStr(newDst));
+    }
 }

@@ -11,6 +11,7 @@ import com.aethernet.Aethernet.utils.RoutingTableEntry;
 
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PacketListener;
+import org.pcap4j.core.PcapAddress;
 import org.pcap4j.core.PcapHandle;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
@@ -20,6 +21,8 @@ import org.pcap4j.util.MacAddress;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import java.net.Inet4Address;
+import java.net.InetAddress;
+
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
 
@@ -40,6 +43,9 @@ public class SysRoute {
         public static int SNAPLEN = 65536;
         public static int READ_TIMEOUT = 10;
     }
+
+    public static PcapHandle internetHandle;
+    public static Inet4Address internetIP;
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 
@@ -50,10 +56,10 @@ public class SysRoute {
         if (!PacketResolve.isIcmp(packet)) return;
 
         if (AetherRoute.asGateway.v()) {
-            if (aetherSubnet.matches(packet)) AetherRoute.deliver(handle, packet);
+            if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
         }
         else {
-            AetherRoute.deliver(handle, packet);
+            AetherRoute.deliver(packet);
         }
     }
 
@@ -104,18 +110,19 @@ public class SysRoute {
 
             if (device.getDescription().startsWith("Intel(R) Wi-Fi")) {
                 try {
-                    PcapHandle handle = device.openLive(
+                    internetHandle = device.openLive(
                         Configs.SNAPLEN, PromiscuousMode.PROMISCUOUS, Configs.READ_TIMEOUT);
-                    handle.sendPacket(PacketCreate.createPingPacket(
-                        IPAddr.buildV4FromStr("10.20.225.10"), IPAddr.buildV4FromStr("1.1.1.1"),
-                        (MacAddress) device.getLinkLayerAddresses().get(0)
-                    ));
+                    for (PcapAddress addr : device.getAddresses()) {
+                        if (addr.getAddress() instanceof Inet4Address) {
+                            internetIP = (Inet4Address) addr.getAddress();
+                        }
+                    }
+                    System.out.println("Internet IP: " + internetIP);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-
 
         }
     }
