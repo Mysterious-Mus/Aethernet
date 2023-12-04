@@ -49,9 +49,6 @@ public class SysRoute {
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 
-    public static Inet4Address ipAddr = IPAddr.buildV4FromStr("192.168.111.10");
-    // public static Inet4Address ipAddr = IPAddr.buildV4FromStr("1.1.1.1");
-
     private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
         if (!PacketResolve.isIcmp(packet)) return;
 
@@ -63,7 +60,7 @@ public class SysRoute {
             if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
         }
         else {
-            if (!PacketResolve.isReplyingMe(packet, ipAddr))
+            if (!PacketResolve.isReplyingMe(packet, internetIP))
                 AetherRoute.deliver(packet);
         }
     }

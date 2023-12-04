@@ -102,7 +102,7 @@ public class AetherRoute {
         {
             // I get an Aethernet packet to me. Maybe I should feed it into
             // internet handle to respond system ack or so
-            if (PacketResolve.isIcmpReply(packet))
+            if (PacketResolve.isReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
                 try {
                     SysRoute.internetHandle.sendPacket(
                         PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
