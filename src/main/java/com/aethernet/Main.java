@@ -92,7 +92,6 @@ public class Main {
         // initialized in the ctor of IPHost
         ethConfig = new EthConfig();
         AetherRoute.init();
-        ARPTable.init();
         SysRoute.start();
         // ui should be launched last because it has to collect all the panels,
         // also, it should wait for other threads to be ready

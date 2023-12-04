@@ -16,29 +16,46 @@ import com.aethernet.Aethernet.SysRoute.Configs;
 import com.aethernet.mac.MacManager;
 import com.aethernet.mac.MacManager.FrameReceivedListener;
 
+/**
+ * Since each Aethernet host may start a ping from its cmd,
+ * they each should have a static Aethernet router to route
+ * packets from the adapter the system uses to the Aethernet
+ */
 public class AetherRoute {
 
     public static PcapNetworkInterface AethernetAdapter;
     public static PcapHandle AethernetHandle;
 
+    static Byte Mac = (byte) 0xff;
     static MacManager macManager;
+    static ARPTable arpTable;
 
     public static void send(Packet packet) {
         System.out.println("a packet delivered into Aethernet");
 
-        // feed into Aethernet adapter
+        // feed into Aethernet adapter, then wireshark can monitor the traffic
         try {
             AethernetHandle.sendPacket(packet);
         }
         catch (PcapNativeException | NotOpenException e) {
             e.printStackTrace();
         }
+
+        // send it into Aethernet
+        // arp resolve
+        Byte dstMac = arpTable.query(packet);
+        if (dstMac == null) {
+            System.out.println("Aethernet router: arp not found");
+            return;
+        }
+        System.out.println("sending to " + dstMac);
+        macManager.sendParallel(dstMac, packet.getRawData());
     }
     
     static FrameReceivedListener frameReceivedListener = new FrameReceivedListener() {
         @Override
         public void frameReceived(MacFrame packet) {
-            System.out.println("Aethernet got a packet");
+            System.out.println("Aethernet router got a packet");
         }
     };
 
@@ -68,6 +85,7 @@ public class AetherRoute {
             }
         }
 
-        // macManager = new MacManager((byte) 0xff, "AetherRoute", frameReceivedListener);
+        arpTable = new ARPTable();
+        macManager = new MacManager(Mac, "AetherRoute", frameReceivedListener);
     }
 }

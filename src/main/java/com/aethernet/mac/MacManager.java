@@ -214,6 +214,7 @@ public class MacManager {
                         // start a thread to do this
                         if (frame.verify()) {
                             System.out.println(appName + " frame " + frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) + " received, but not my frame");
+                            System.out.println("my addr: " + ADDR + " frame addr: " + frame.getHeader().getField(MacFrame.Configs.HeaderFields.DEST_ADDR));
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -391,5 +392,19 @@ public class MacManager {
         System.out.println(ANSI.ANSI_BLUE + "send successfully" + ANSI.ANSI_RESET);
         // print time consumed
         System.out.println("Time consumed: " + (System.currentTimeMillis() - startTime) + "ms");
+    }
+
+    public void send(byte dstAddr, byte[] data) {
+        ArrayList<Boolean> bitString = TypeConvertion.byteArray2BooleanList(data);
+        send(dstAddr, bitString);
+    }
+
+    public void sendParallel(byte dstAddr, byte[] data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                send(dstAddr, data);
+            }
+        }).start();
     }
 }
