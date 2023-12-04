@@ -63,7 +63,8 @@ public class SysRoute {
             if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
         }
         else {
-            AetherRoute.deliver(packet);
+            if (!PacketResolve.isReplyingMe(packet, ipAddr))
+                AetherRoute.deliver(packet);
         }
     }
 

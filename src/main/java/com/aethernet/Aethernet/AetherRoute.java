@@ -102,14 +102,15 @@ public class AetherRoute {
         {
             // I get an Aethernet packet to me. Maybe I should feed it into
             // internet handle to respond system ack or so
-            try {
-                SysRoute.internetHandle.sendPacket(
-                    PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
-                );
-            }
-            catch (PcapNativeException | NotOpenException e) {
-                e.printStackTrace();
-            }
+            if (PacketResolve.isIcmpReply(packet))
+                try {
+                    SysRoute.internetHandle.sendPacket(
+                        PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                    );
+                }
+                catch (PcapNativeException | NotOpenException e) {
+                    e.printStackTrace();
+                }
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet

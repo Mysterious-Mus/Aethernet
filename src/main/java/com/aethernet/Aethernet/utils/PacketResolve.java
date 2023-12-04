@@ -7,6 +7,7 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.IcmpV4EchoReplyPacket.IcmpV4EchoReplyHeader;
 import org.pcap4j.packet.namednumber.EtherType;
 import org.pcap4j.packet.namednumber.IcmpV4Type;
 import org.pcap4j.core.Pcaps;
@@ -15,6 +16,7 @@ import java.net.Inet4Address;
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
 import org.pcap4j.packet.IcmpV4EchoPacket;
+import org.pcap4j.packet.IcmpV4EchoReplyPacket;
 
 public class PacketResolve {
     public static Packet byteArr2Packet(byte[] data) {
@@ -30,6 +32,21 @@ public class PacketResolve {
     public static boolean isIcmpPing(Packet packet) { 
         if(packet.contains(IcmpV4CommonPacket.class)) {
             return true;
+        }
+        return false;
+    }
+
+    public static boolean isIcmpReply(Packet packet) {
+        return packet.contains(IcmpV4EchoReplyPacket.class);
+    }
+
+    public static boolean isReplyingMe(Packet packet, Inet4Address myIp) {
+        if (isIcmpReply(packet)) {
+            IpV4Packet.IpV4Header ipv4Header = packet.get(IpV4Packet.class).getHeader();
+            Inet4Address dstAddr = ipv4Header.getDstAddr();
+            if (dstAddr.equals(myIp)) {
+                return true;
+            }
         }
         return false;
     }
