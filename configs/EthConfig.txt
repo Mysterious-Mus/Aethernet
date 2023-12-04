@@ -1,4 +1,4 @@
 AethHost_me.ipAddr 172.0.0.1
 AethHost_me.macAddr 1
-AethHost_far.ipAddr 172.0.0.2
-AethHost_far.macAddr 2
+AethHost_far.ipAddr 172.0.0.255
+AethHost_far.macAddr 255

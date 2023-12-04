@@ -16,6 +16,7 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.util.MacAddress;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import java.net.Inet4Address;
@@ -96,6 +97,22 @@ public class SysRoute {
             if (!device.getDescription().startsWith("Microsoft KM-TEST")) {
                 new adapterListenerThread(device).start();
             }
+
+            if (device.getDescription().startsWith("Intel(R) Wi-Fi")) {
+                try {
+                    PcapHandle handle = device.openLive(
+                        Configs.SNAPLEN, PromiscuousMode.PROMISCUOUS, Configs.READ_TIMEOUT);
+                    handle.sendPacket(PacketCreate.createPingPacket(
+                        IPAddr.buildV4FromStr("10.20.225.10"), IPAddr.buildV4FromStr("1.1.1.1"),
+                        (MacAddress) device.getLinkLayerAddresses().get(0)
+                    ));
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+
         }
     }
 }

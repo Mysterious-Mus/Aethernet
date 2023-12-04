@@ -1,6 +1,9 @@
 package com.aethernet.config.utils;
 
 import javax.swing.*;
+
+import com.aethernet.utils.TypeConvertion;
+
 import java.util.*;
 
 public class ConfigTermTemplate<T> {
@@ -88,7 +91,7 @@ public class ConfigTermTemplate<T> {
             return (String)value;
         }
         else if (value instanceof Byte) {
-            return Byte.toString((Byte) value);
+            return Integer.toString(TypeConvertion.unsignedByteToInt((Byte) value));
         }
         else {
             return "Unsupported Type";
@@ -112,7 +115,8 @@ public class ConfigTermTemplate<T> {
             return (T)x;
         }
         else if (value instanceof Byte) {
-            return (T) Byte.valueOf(x);
+            int intValue = Integer.parseInt(x);
+            return (T) Byte.valueOf((byte) (intValue & 0xFF));
         }
         else {
             return null;

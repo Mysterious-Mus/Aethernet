@@ -89,6 +89,10 @@ public class AetherRoute {
             catch (PcapNativeException | NotOpenException e) {
                 e.printStackTrace();
             }
+        else if (!SysRoute.aetherSubnet.matches(packet)) {
+            // the packet is neither a reply to outer nor a request to aether subnet
+            // TODO: 
+        }
     }
 
     /**
