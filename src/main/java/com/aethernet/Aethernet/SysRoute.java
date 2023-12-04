@@ -52,9 +52,13 @@ public class SysRoute {
     public static Inet4Address ipAddr = IPAddr.buildV4FromStr("192.168.111.10");
     // public static Inet4Address ipAddr = IPAddr.buildV4FromStr("1.1.1.1");
 
-    private static void adapterReceiveHandler(PcapHandle handle, Packet packet) {
+    private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
         if (!PacketResolve.isIcmp(packet)) return;
 
+        if (!(packet instanceof EthernetPacket)) {
+            System.out.println("Check which adapter forwarded the ping! Check the route table!");
+        }
+        
         if (AetherRoute.asGateway.v()) {
             if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
         }
@@ -79,7 +83,7 @@ public class SysRoute {
                 handle.loop(-1, new PacketListener() {
                     @Override
                     public void gotPacket(Packet packet) {
-                        adapterReceiveHandler(handle, packet);
+                        adapterReceiveHandler(device, packet);
                     }
                 });
             } catch (PcapNativeException | NotOpenException | InterruptedException e) {
