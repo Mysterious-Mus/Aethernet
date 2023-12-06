@@ -70,8 +70,7 @@ public class PacketCreate {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
         ipV4Builder = ipV4Builder
-            .srcAddr(newSrc)
-            .correctChecksumAtBuild(true);
+            .srcAddr(newSrc);
 
         EthernetPacket.Builder ethBuilder = original.getBuilder();
         ethBuilder = ethBuilder
@@ -88,8 +87,7 @@ public class PacketCreate {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
         ipV4Builder = ipV4Builder
-            .dstAddr(newDst)
-            .correctChecksumAtBuild(true);
+            .dstAddr(newDst);
 
         EthernetPacket.Builder ethBuilder = original.getBuilder();
         ethBuilder = ethBuilder
@@ -112,8 +110,7 @@ public class PacketCreate {
 
         IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
         ipV4Builder = ipV4Builder
-            .payloadBuilder(icmpBuilder)
-            .correctChecksumAtBuild(true);
+            .payloadBuilder(icmpBuilder);
 
         EthernetPacket.Builder ethBuilder = original.getBuilder();
         ethBuilder = ethBuilder
