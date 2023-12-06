@@ -104,9 +104,12 @@ public class AetherRoute {
             // internet handle to respond system ack or so
             if (PacketResolve.isReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
                 SysRoute.forward2Internet(
-                    PacketCreate.correctIpV4Checksum(
-                        PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
-                    )        
+                    PacketCreate.changeDstMac(
+                        PacketCreate.correctIpV4Checksum(
+                            PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                        ),
+                        SysRoute.internetMAC
+                    )   
                 );
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {

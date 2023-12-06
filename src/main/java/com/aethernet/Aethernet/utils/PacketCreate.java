@@ -119,6 +119,16 @@ public class PacketCreate {
         return ethBuilder.build();
     }
 
+    public static EthernetPacket changeDstMac(EthernetPacket original, LinkLayerAddress newDstMac) {
+        MacAddress newSrcMacAddress = MacAddress.getByName(newDstMac.toString());
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .dstAddr(newSrcMacAddress);
+
+        return ethBuilder.build();
+    }
+
     public static EthernetPacket changeIcmpPingId(EthernetPacket original, short newId) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         if (!ipV4Packet.contains(IcmpV4EchoPacket.class)) {
