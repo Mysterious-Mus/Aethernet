@@ -49,4 +49,20 @@ public class RoutingTableEntry {
         if (dstIP == null) return false;
         return matches(dstIP);
     }
+
+    public byte getHostId(Inet4Address ip) {
+        byte[] addressBytes = ip.getAddress();
+        return addressBytes[addressBytes.length - 1];
+    }
+
+    public Inet4Address hostId2Address(byte id) {
+        byte[] addressBytes = this.networkAddress.getAddress();
+        addressBytes[addressBytes.length - 1] = id;
+        try {
+            return (Inet4Address) Inet4Address.getByAddress(addressBytes);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
 }

@@ -98,6 +98,45 @@ public class PacketCreate {
         return ethBuilder.build();
     }
 
+    public static EthernetPacket changeIcmpPingId(EthernetPacket original, short newId) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        IcmpV4EchoPacket icmpPacket = (IcmpV4EchoPacket) ipV4Packet.getPayload();
+
+        IcmpV4EchoPacket.Builder icmpBuilder = icmpPacket.getBuilder();
+        icmpBuilder = icmpBuilder
+            .identifier(newId);
+
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+        ipV4Builder = ipV4Builder
+            .payloadBuilder(icmpBuilder)
+            .correctChecksumAtBuild(true);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
+    public static EthernetPacket changeIcmpPingPayload(EthernetPacket original, String newPayload) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        IcmpV4EchoPacket icmpPacket = (IcmpV4EchoPacket) ipV4Packet.getPayload();
+
+        IcmpV4EchoPacket.Builder icmpBuilder = icmpPacket.getBuilder();
+        icmpBuilder = icmpBuilder
+            .payloadBuilder(new UnknownPacket.Builder().rawData(newPayload.getBytes()));
+
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+        ipV4Builder = ipV4Builder
+            .payloadBuilder(icmpBuilder);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
     public static EthernetPacket changeDstIp(EthernetPacket original, String newDst) {
         return changeDstIp(original, IPAddr.buildV4FromStr(newDst));
     }

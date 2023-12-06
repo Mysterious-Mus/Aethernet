@@ -79,4 +79,12 @@ public class TypeConvertion {
     public static int unsignedByteToInt(byte b) {
         return (int) b & 0xFF;
     }
+
+    public static short unsignedByteToShort(byte b) {
+        return (short) (b & 0xFF);
+    }
+
+    public static byte short2byte(short x) {
+        return (byte) x;
+    }
 }

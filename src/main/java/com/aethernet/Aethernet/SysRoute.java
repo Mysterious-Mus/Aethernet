@@ -3,6 +3,7 @@ package com.aethernet.Aethernet;
 import java.util.List;
 
 import com.aethernet.utils.CyclicBuffer;
+import com.aethernet.utils.TypeConvertion;
 import com.aethernet.Main;
 import com.aethernet.Aethernet.utils.IPAddr;
 import com.aethernet.Aethernet.utils.PacketResolve;
@@ -49,15 +50,37 @@ public class SysRoute {
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 
+    public static void forward2Internet(Packet packet) {
+        try {
+            internetHandle.sendPacket(packet);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
         if (!PacketResolve.isIcmp(packet)) return;
-
-        if (!(packet instanceof EthernetPacket)) {
-            System.out.println("Check which adapter forwarded the ping! Check the route table!");
-        }
         
         if (AetherRoute.asGateway.v()) {
+            // if the packet in the internet device is toward athernet
             if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
+            // if the packet is an icmp reply to internet IP and has payload agent magic
+            if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
+                Packet packet4Aeth = 
+                    PacketCreate.changeIcmpPingId(
+                        PacketCreate.changeDstIp(
+                            (EthernetPacket) packet,
+                            aetherSubnet.hostId2Address(
+                                TypeConvertion.short2byte(
+                                    PacketResolve.getIcmpId(packet)
+                                )
+                            )  
+                        ),
+                        (short) 0x0001 // echo from cmd ping always have 0x0001 as id
+                    );
+                AetherRoute.deliver(packet);
+            }
         }
         else {
             if (!PacketResolve.isReplyingMe(packet, internetIP))

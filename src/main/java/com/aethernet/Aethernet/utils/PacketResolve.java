@@ -10,6 +10,10 @@ import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.IcmpV4EchoReplyPacket.IcmpV4EchoReplyHeader;
 import org.pcap4j.packet.namednumber.EtherType;
 import org.pcap4j.packet.namednumber.IcmpV4Type;
+
+import com.aethernet.Aethernet.AetherRoute;
+import com.aethernet.physical.transmit.AetherPacker;
+
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import java.net.Inet4Address;
@@ -107,5 +111,29 @@ public class PacketResolve {
             return dstAddr;
         }
         return null;
+    }
+
+    public static boolean isAethernetAgent(Packet packet) {
+        if (packet.contains(IpV4Packet.class)) {
+            IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
+            if (ipV4Packet.contains(IcmpV4CommonPacket.class)) {
+                IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
+                byte[] payload = icmpPacket.getPayload().getRawData();
+                String payloadString = new String(payload);
+                return payloadString.equals(AetherRoute.internetAgentMagic);
+            }
+        }
+        return false;
+    }
+
+    public static short getIcmpId(Packet packet) {
+        if (packet.contains(IpV4Packet.class)) {
+            IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
+            if (ipV4Packet.contains(IcmpV4EchoPacket.class)) {
+                IcmpV4EchoPacket icmpPacket = ipV4Packet.get(IcmpV4EchoPacket.class);
+                return icmpPacket.getHeader().getIdentifier();
+            }
+        }
+        throw new RuntimeException("not an icmp packet");
     }
 }

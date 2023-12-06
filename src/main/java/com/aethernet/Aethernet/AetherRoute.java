@@ -22,6 +22,7 @@ import com.aethernet.mac.MacManager;
 import com.aethernet.Aethernet.SysRoute.Configs;
 import com.aethernet.mac.MacManager;
 import com.aethernet.mac.MacManager.FrameReceivedListener;
+import com.aethernet.utils.TypeConvertion;
 import com.aethernet.Aethernet.utils.IPAddr;
 import com.aethernet.Aethernet.utils.PacketCreate;
 
@@ -31,6 +32,8 @@ import com.aethernet.Aethernet.utils.PacketCreate;
  * packets from the adapter the system uses to the Aethernet
  */
 public class AetherRoute {
+
+    public static String internetAgentMagic = "I'm delivering for Athernet!";
 
     public static ConfigTerm<Boolean> asGateway;
     
@@ -103,20 +106,31 @@ public class AetherRoute {
             // I get an Aethernet packet to me. Maybe I should feed it into
             // internet handle to respond system ack or so
             if (PacketResolve.isReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
-                try {
-                    SysRoute.internetHandle.sendPacket(
-                        PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
-                    );
-                }
-                catch (PcapNativeException | NotOpenException e) {
-                    e.printStackTrace();
-                }
+                SysRoute.forward2Internet(
+                    PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                );
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet
             // might be a packet from a non-gateway host to ping outside
-            // TODO: 
             if (asGateway.v()) {
+                // if the Aethernet host want to ping outside
+                if (PacketResolve.isIcmpPing(packet)) {
+                    // change the src to internet ip
+                    Packet agentPacket = 
+                    PacketCreate.changeIcmpPingPayload(
+                        PacketCreate.changeIcmpPingId(
+                            PacketCreate.changeSrcIp(
+                                (EthernetPacket) packet, SysRoute.internetIP
+                            ),
+                            TypeConvertion.unsignedByteToShort(
+                                SysRoute.aetherSubnet.getHostId(PacketResolve.getSrcIP(packet))
+                            )
+                        ),
+                        internetAgentMagic
+                    );
+                    SysRoute.forward2Internet(agentPacket);
+                }
             }
         }
     }
