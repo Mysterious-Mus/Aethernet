@@ -60,7 +60,7 @@ public class SysRoute {
     }
 
     private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
-        if (!PacketResolve.isIcmp(packet)) return;
+        if (!PacketResolve.isIcmpPing(packet) && !PacketResolve.isIcmpReply(packet)) return;
         
         if (AetherRoute.asGateway.v()) {
             // if the packet in the internet device is toward athernet
