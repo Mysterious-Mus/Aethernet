@@ -67,6 +67,18 @@ public class PacketCreate {
         return ethBuilder.build();
     }
 
+    public static EthernetPacket correctIpV4Checksum(EthernetPacket original) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder()
+            .correctChecksumAtBuild(true);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder()
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
     public static EthernetPacket changeSrcIp(EthernetPacket original, Inet4Address newSrc) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
@@ -109,10 +121,37 @@ public class PacketCreate {
 
     public static EthernetPacket changeIcmpPingId(EthernetPacket original, short newId) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
-        assert ipV4Packet.contains(IcmpV4EchoPacket.class);
+        if (!ipV4Packet.contains(IcmpV4EchoPacket.class)) {
+            System.out.println("not icmp echo!");
+        }
         IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
 
         IcmpV4EchoPacket.Builder icmpEchoBuilder = ((IcmpV4EchoPacket)icmpPacket.getPayload()).getBuilder();
+        icmpEchoBuilder = icmpEchoBuilder.identifier(newId);
+
+        IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder();
+        icmpBuilder = icmpBuilder
+            .payloadBuilder(icmpEchoBuilder);
+
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+        ipV4Builder = ipV4Builder
+            .payloadBuilder(icmpBuilder);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
+    public static EthernetPacket changeIcmpEchoReplyId(EthernetPacket original, short newId) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        if (!ipV4Packet.contains(IcmpV4EchoReplyPacket.class)) {
+            System.out.println("not icmp echo reply!");
+        }
+        IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
+
+        IcmpV4EchoReplyPacket.Builder icmpEchoBuilder = ((IcmpV4EchoReplyPacket)icmpPacket.getPayload()).getBuilder();
         icmpEchoBuilder = icmpEchoBuilder.identifier(newId);
 
         IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder();

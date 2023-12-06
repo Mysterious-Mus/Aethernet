@@ -133,7 +133,12 @@ public class PacketResolve {
                 IcmpV4EchoPacket icmpPacket = ipV4Packet.get(IcmpV4EchoPacket.class);
                 return icmpPacket.getHeader().getIdentifier();
             }
+            else if (ipV4Packet.contains(IcmpV4EchoReplyPacket.class)) {
+                IcmpV4EchoReplyPacket icmpPacket = ipV4Packet.get(IcmpV4EchoReplyPacket.class);
+                return icmpPacket.getHeader().getIdentifier();
+            }
         }
-        throw new RuntimeException("not an icmp packet");
+        System.out.println("not an icmp packet");
+        return 0;
     }
 }

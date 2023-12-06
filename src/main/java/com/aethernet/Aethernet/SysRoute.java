@@ -66,23 +66,30 @@ public class SysRoute {
         
         if (AetherRoute.asGateway.v()) {
             // if the packet in the internet device is toward athernet
-            if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
+            if (aetherSubnet.matches(packet)) {
+                System.out.println(nif.getDescription());
+                AetherRoute.deliver(packet);
+            }
             // if the packet is an icmp reply to internet IP and has payload agent magic
             // if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
             if (PacketResolve.isReplyingMe(packet, internetIP)) {
+                Inet4Address newDst =
+                    aetherSubnet.hostId2Address(
+                        TypeConvertion.short2byte(
+                            PacketResolve.getIcmpId(packet)
+                        )
+                    );
                 Packet packet4Aeth = 
-                    PacketCreate.changeIcmpPingId(
-                        PacketCreate.changeDstIp(
-                            (EthernetPacket) packet,
-                            aetherSubnet.hostId2Address(
-                                TypeConvertion.short2byte(
-                                    PacketResolve.getIcmpId(packet)
-                                )
-                            )  
-                        ),
+                    PacketCreate.changeDstIp(
+                        (EthernetPacket) packet,
+                        newDst 
+                    );
+                packet4Aeth =
+                    PacketCreate.changeIcmpEchoReplyId(
+                        (EthernetPacket) packet4Aeth,
                         (short) 0x0001 // echo from cmd ping always have 0x0001 as id
                     );
-                AetherRoute.deliver(packet);
+                AetherRoute.deliver(packet4Aeth);
             }
         }
         else {
@@ -139,7 +146,10 @@ public class SysRoute {
         }
 
         for (PcapNetworkInterface device : allDevs) {
-            if (!device.getDescription().startsWith("Microsoft KM-TEST")) {
+            // if (!device.getDescription().startsWith("Microsoft KM-TEST")) {
+            //     new adapterListenerThread(device).start();
+            // }
+            if (device.getDescription().startsWith("Intel(R) Wi-Fi")) {
                 new adapterListenerThread(device).start();
             }
 

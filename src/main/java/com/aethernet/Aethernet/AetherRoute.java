@@ -55,13 +55,10 @@ public class AetherRoute {
      * @param packet
      */
     public static void deliver(Packet packet) {
-        System.out.println("a packet delivered into Aethernet");
-
         // if src is my internet IP, then translate into my aethernet ip
         if (PacketResolve.getSrcIP(packet).equals(SysRoute.internetIP)) {
             packet = PacketCreate.changeSrcIp((EthernetPacket) packet, me.ipAddr.v());
         }
-
         // feed into Aethernet adapter, then wireshark can monitor the traffic
         try {
             AethernetHandle.sendPacket(packet);
@@ -107,7 +104,9 @@ public class AetherRoute {
             // internet handle to respond system ack or so
             if (PacketResolve.isReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
                 SysRoute.forward2Internet(
-                    PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                    PacketCreate.correctIpV4Checksum(
+                        PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                    )        
                 );
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
@@ -124,14 +123,14 @@ public class AetherRoute {
                                 SysRoute.aetherSubnet.getHostId(PacketResolve.getSrcIP(packet))
                             )
                         );
-                    System.out.println("Step1:");
-                    System.out.println(agentPacket);
+                    // System.out.println("Step1:");
+                    // System.out.println(agentPacket);
                     agentPacket = 
                     PacketCreate.changeSrcIp(
                         (EthernetPacket) agentPacket, SysRoute.internetIP
                         );
-                    System.out.println("Step2:");
-                    System.out.println(agentPacket);
+                    // System.out.println("Step2:");
+                    // System.out.println(agentPacket);
                     // agentPacket = 
                     // PacketCreate.changeIcmpPingPayload(
                     //     (EthernetPacket) agentPacket,
@@ -142,8 +141,10 @@ public class AetherRoute {
                         (EthernetPacket) agentPacket,
                         SysRoute.internetMAC
                         );
-                    System.out.println("Step3:");
-                    System.out.println(agentPacket);
+                    agentPacket =
+                    PacketCreate.correctIpV4Checksum((EthernetPacket)agentPacket);
+                    // System.out.println("Step3:");
+                    // System.out.println(agentPacket);
                     SysRoute.forward2Internet(agentPacket);
                 }
             }
