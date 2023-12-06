@@ -34,7 +34,7 @@ public class PacketResolve {
     }
 
     public static boolean isIcmpPing(Packet packet) { 
-        if(packet.contains(IcmpV4CommonPacket.class)) {
+        if(packet.contains(IcmpV4EchoPacket.class)) {
             return true;
         }
         return false;
