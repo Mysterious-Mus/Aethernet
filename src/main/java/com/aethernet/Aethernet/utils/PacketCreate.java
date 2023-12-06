@@ -2,6 +2,7 @@ package com.aethernet.Aethernet.utils;
 
 import org.pcap4j.packet.*;
 import org.pcap4j.packet.namednumber.*;
+import org.pcap4j.util.LinkLayerAddress;
 import org.pcap4j.util.MacAddress;
 
 import java.net.*;
@@ -92,6 +93,16 @@ public class PacketCreate {
         EthernetPacket.Builder ethBuilder = original.getBuilder();
         ethBuilder = ethBuilder
             .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
+    public static EthernetPacket changeSrcMac(EthernetPacket original, LinkLayerAddress newSrcMac) {
+        MacAddress newSrcMacAddress = MacAddress.getByName(newSrcMac.toString());
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .srcAddr(newSrcMacAddress);
 
         return ethBuilder.build();
     }

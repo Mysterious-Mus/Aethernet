@@ -18,6 +18,7 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.util.LinkLayerAddress;
 import org.pcap4j.util.MacAddress;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
@@ -47,6 +48,7 @@ public class SysRoute {
 
     public static PcapHandle internetHandle;
     public static Inet4Address internetIP;
+    public static LinkLayerAddress internetMAC;
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 
@@ -151,6 +153,9 @@ public class SysRoute {
                         }
                     }
                     System.out.println("Internet IP: " + internetIP);
+
+                    internetMAC = device.getLinkLayerAddresses().get(0);
+                    System.out.println(internetMAC);
                 }
                 catch (Exception e) {
                     e.printStackTrace();

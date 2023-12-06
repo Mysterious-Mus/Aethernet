@@ -137,8 +137,13 @@ public class AetherRoute {
                     //     (EthernetPacket) agentPacket,
                     //     internetAgentMagic
                     //     );
-                    // System.out.println("Step3:");
-                    // System.out.println(agentPacket);
+                    agentPacket = 
+                    PacketCreate.changeSrcMac(
+                        (EthernetPacket) agentPacket,
+                        SysRoute.internetMAC
+                        );
+                    System.out.println("Step3:");
+                    System.out.println(agentPacket);
                     SysRoute.forward2Internet(agentPacket);
                 }
             }
