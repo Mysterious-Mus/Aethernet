@@ -100,11 +100,15 @@ public class PacketCreate {
 
     public static EthernetPacket changeIcmpPingId(EthernetPacket original, short newId) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
-        IcmpV4EchoPacket icmpPacket = ipV4Packet.get(IcmpV4EchoPacket.class);
+        assert ipV4Packet.contains(IcmpV4EchoPacket.class);
+        IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
 
-        IcmpV4EchoPacket.Builder icmpBuilder = icmpPacket.getBuilder();
+        IcmpV4EchoPacket.Builder icmpEchoBuilder = ((IcmpV4EchoPacket)icmpPacket.getPayload()).getBuilder();
+        icmpEchoBuilder = icmpEchoBuilder.identifier(newId);
+
+        IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder();
         icmpBuilder = icmpBuilder
-            .identifier(newId);
+            .payloadBuilder(icmpEchoBuilder);
 
         IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
         ipV4Builder = ipV4Builder
@@ -120,9 +124,10 @@ public class PacketCreate {
 
     public static EthernetPacket changeIcmpPingPayload(EthernetPacket original, String newPayload) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
-        IcmpV4EchoPacket icmpPacket = ipV4Packet.get(IcmpV4EchoPacket.class);
+        assert ipV4Packet.contains(IcmpV4EchoPacket.class);
+        IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
 
-        IcmpV4EchoPacket.Builder icmpBuilder = icmpPacket.getBuilder();
+        IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder();
         icmpBuilder = icmpBuilder
             .payloadBuilder(new UnknownPacket.Builder().rawData(newPayload.getBytes()));
 
