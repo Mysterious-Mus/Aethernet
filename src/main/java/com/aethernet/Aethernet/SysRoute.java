@@ -66,7 +66,8 @@ public class SysRoute {
             // if the packet in the internet device is toward athernet
             if (aetherSubnet.matches(packet)) AetherRoute.deliver(packet);
             // if the packet is an icmp reply to internet IP and has payload agent magic
-            if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
+            // if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
+            if (PacketResolve.isReplyingMe(packet, internetIP)) {
                 Packet packet4Aeth = 
                     PacketCreate.changeIcmpPingId(
                         PacketCreate.changeDstIp(
@@ -83,8 +84,15 @@ public class SysRoute {
             }
         }
         else {
-            if (!PacketResolve.isReplyingMe(packet, internetIP))
-                AetherRoute.deliver(packet);
+            // if I'm a host, not the gateway
+            if (PacketResolve.isIcmpPing(packet) 
+                && PacketResolve.getSrcIP(packet).equals(internetIP)) 
+            {
+                // get a ping request to someone in the cmd
+                AetherRoute.deliver(
+                    PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.gatewayIP)
+                );
+            }
         }
     }
 

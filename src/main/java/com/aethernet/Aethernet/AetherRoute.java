@@ -118,17 +118,27 @@ public class AetherRoute {
                 if (PacketResolve.isIcmpPing(packet)) {
                     // change the src to internet ip
                     Packet agentPacket = 
-                    PacketCreate.changeIcmpPingPayload(
                         PacketCreate.changeIcmpPingId(
-                            PacketCreate.changeSrcIp(
-                                (EthernetPacket) packet, SysRoute.internetIP
-                            ),
+                            (EthernetPacket) packet,
                             TypeConvertion.unsignedByteToShort(
                                 SysRoute.aetherSubnet.getHostId(PacketResolve.getSrcIP(packet))
                             )
-                        ),
-                        internetAgentMagic
-                    );
+                        );
+                    System.out.println("Step1:");
+                    System.out.println(agentPacket);
+                    agentPacket = 
+                    PacketCreate.changeSrcIp(
+                        (EthernetPacket) agentPacket, SysRoute.internetIP
+                        );
+                    System.out.println("Step2:");
+                    System.out.println(agentPacket);
+                    // agentPacket = 
+                    // PacketCreate.changeIcmpPingPayload(
+                    //     (EthernetPacket) agentPacket,
+                    //     internetAgentMagic
+                    //     );
+                    // System.out.println("Step3:");
+                    // System.out.println(agentPacket);
                     SysRoute.forward2Internet(agentPacket);
                 }
             }
