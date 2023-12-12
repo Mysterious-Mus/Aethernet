@@ -66,12 +66,13 @@ public class AetherRoute {
         }
 
         // send it into Aethernet
-        Inet4Address dstIp = asGateway.v() ? PacketResolve.getDstIP(packet) : gatewayIP;
+        Inet4Address dstIp = SysRoute.aetherSubnet.matches(packet) ? PacketResolve.getDstIP(packet) : gatewayIP;
         
         Byte dstMac = me.arpTable.query(dstIp);
+
         // arp resolve
         while (dstMac == null) {
-            Packet arpRequest = PacketCreate.createArpRequest(me.macAddr.v(), IPAddr.buildV4FromStr(me.ipAddr.v()), PacketResolve.getDstIP(packet));
+            Packet arpRequest = PacketCreate.createArpRequest(me.macAddr.v(), IPAddr.buildV4FromStr(me.ipAddr.v()), dstIp);
             try {
                 AethernetHandle.sendPacket(arpRequest);
             }
@@ -80,6 +81,7 @@ public class AetherRoute {
             }
             me.macManager.sendNoWait(MacFrame.Configs.broadcastAddr, arpRequest.getRawData());
             me.arpReply.waitTillPermitted();
+            me.arpReply.unpermit();
             dstMac = me.arpTable.query(dstIp);
         }
 
