@@ -15,7 +15,7 @@ public class ARPTable {
 
     public ARPTable() {
         table = new HashMap<Inet4Address, Byte>();
-        addInitEntries();
+       // addInitEntries();
     }
  
     public void addInitEntries() {
@@ -31,5 +31,10 @@ public class ARPTable {
 
     public Byte query(Packet packet) {
         return query(PacketResolve.getDstIP(packet));
+    }
+    
+    public void addEntry(Inet4Address ipaddr, Byte macaddr) {
+        // if already present, overwrite
+        table.put(ipaddr, macaddr);
     }
 }

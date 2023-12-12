@@ -10,6 +10,7 @@ import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.IcmpV4EchoReplyPacket.IcmpV4EchoReplyHeader;
 import org.pcap4j.packet.namednumber.EtherType;
 import org.pcap4j.packet.namednumber.IcmpV4Type;
+import org.pcap4j.util.MacAddress;
 
 import com.aethernet.Aethernet.AetherRoute;
 import com.aethernet.physical.transmit.AetherPacker;
@@ -21,6 +22,9 @@ import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
 import org.pcap4j.packet.IcmpV4EchoPacket;
 import org.pcap4j.packet.IcmpV4EchoReplyPacket;
+
+import org.pcap4j.packet.ArpPacket;
+import org.pcap4j.packet.namednumber.ArpOperation;
 
 public class PacketResolve {
     public static Packet byteArr2Packet(byte[] data) {
@@ -93,6 +97,44 @@ public class PacketResolve {
         return false;
     }
 
+    public static boolean isArpRequestme(Packet packet, Inet4Address myIp) {
+        if (packet.contains(ArpPacket.class)) {
+            ArpPacket arpPacket = packet.get(ArpPacket.class);
+            ArpPacket.ArpHeader arpHeader = arpPacket.getHeader();
+            if (arpHeader.getOperation().equals(ArpOperation.REQUEST) && arpHeader.getDstProtocolAddr().equals(myIp)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isArpReplytme(Packet packet, Inet4Address myIp) {
+        if (packet.contains(ArpPacket.class)) {
+            ArpPacket arpPacket = packet.get(ArpPacket.class);
+            ArpPacket.ArpHeader arpHeader = arpPacket.getHeader();
+            if (arpHeader.getOperation().equals(ArpOperation.REPLY) && arpHeader.getDstProtocolAddr().equals(myIp)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The get the mac address from the arp request 
+     * @return 
+     */
+    public static Byte getMacSrcAddr(Packet packet){
+        if (packet.contains(ArpPacket.class)) {
+            ArpPacket arpPacket = packet.get(ArpPacket.class);
+            ArpPacket.ArpHeader arpHeader = arpPacket.getHeader();
+            // Get the last byte
+            Byte macaddr = arpHeader.getSrcHardwareAddr().getAddress()[MacAddress.SIZE_IN_BYTES - 1];
+            return macaddr;
+        }
+        System.err.println("The resolving packet is not an Arp Packet!");
+        return null;
+    }
+
     public static Inet4Address getSrcIP(Packet packet) {
         if (packet.contains(IpV4Packet.class)) {
             IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
@@ -100,6 +142,13 @@ public class PacketResolve {
             Inet4Address srcAddr = ipV4Header.getSrcAddr();
             return srcAddr;
         }
+        else if(packet.contains(ArpPacket.class)) {
+            ArpPacket arpPacket = packet.get(ArpPacket.class);
+            ArpPacket.ArpHeader arpHeader = arpPacket.getHeader();
+            Inet4Address dstAddr = (Inet4Address)arpHeader.getSrcProtocolAddr();
+            return dstAddr;
+        }
+        System.err.println("The resolving packet is not an valid Packet!");
         return null;
     }
 
@@ -110,6 +159,13 @@ public class PacketResolve {
             Inet4Address dstAddr = ipV4Header.getDstAddr();
             return dstAddr;
         }
+        else if(packet.contains(ArpPacket.class)) {
+            ArpPacket arpPacket = packet.get(ArpPacket.class);
+            ArpPacket.ArpHeader arpHeader = arpPacket.getHeader();
+            Inet4Address dstAddr = (Inet4Address)arpHeader.getDstProtocolAddr();
+            return dstAddr;
+        }
+        System.err.println("The resolving packet is not an valid Packet!");
         return null;
     }
 

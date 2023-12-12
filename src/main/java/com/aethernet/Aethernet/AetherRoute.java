@@ -38,15 +38,13 @@ public class AetherRoute {
     public static ConfigTerm<Boolean> asGateway;
     
     // hardcode
-    public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.0.0.1");
-    public static Byte gatewayMac = 0x02;
+    public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.0.0.2");
 
     public static PcapNetworkInterface AethernetAdapter;
     public static PcapHandle AethernetHandle;
 
     static Byte Mac = (byte) 0xff;
     static AethHost me;
-    static ARPTable arpTable;
 
     /**
      * deliver a packet into Aethernet
@@ -68,19 +66,23 @@ public class AetherRoute {
         }
 
         // send it into Aethernet
+        Inet4Address dstIp = asGateway.v() ? PacketResolve.getDstIP(packet) : gatewayIP;
+        
+        Byte dstMac = me.arpTable.query(dstIp);
         // arp resolve
-        Byte dstMac = arpTable.query(packet);
-        if (dstMac == null) {
-            System.out.println("Aethernet router: arp not found");
-            if (asGateway.v()) {
-                // TODO
-                return;
+        while (dstMac == null) {
+            Packet arpRequest = PacketCreate.createArpRequest(me.macAddr.v(), IPAddr.buildV4FromStr(me.ipAddr.v()), PacketResolve.getDstIP(packet));
+            try {
+                AethernetHandle.sendPacket(arpRequest);
             }
-            else {
-                // go to gateway
-                dstMac = gatewayMac;
+            catch (PcapNativeException | NotOpenException e) {
+                e.printStackTrace();
             }
+            me.macManager.sendNoWait(MacFrame.Configs.broadcastAddr, arpRequest.getRawData());
+            me.arpReply.waitTillPermitted();
+            dstMac = me.arpTable.query(dstIp);
         }
+
         System.out.println("sending to " + dstMac);
         me.macManager.sendNoWait(dstMac, packet.getRawData());
     }
@@ -202,7 +204,5 @@ public class AetherRoute {
                 break;
             }
         }
-
-        arpTable = new ARPTable();
     }
 }

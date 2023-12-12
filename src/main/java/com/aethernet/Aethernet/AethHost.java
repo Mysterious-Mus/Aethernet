@@ -1,6 +1,5 @@
 package com.aethernet.Aethernet;
 
-import javax.swing.JPanel;
 import java.awt.*;
 import javax.swing.*;
 
@@ -13,6 +12,7 @@ import com.aethernet.mac.MacFrame;
 import com.aethernet.mac.MacManager;
 import com.aethernet.mac.MacFrame.Configs.HeaderFields;
 import com.aethernet.mac.MacManager.FrameReceivedListener;
+import com.aethernet.utils.sync.Permission;
 
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.Packet;
@@ -30,6 +30,10 @@ public class AethHost {
     public ConfigTerm<Byte> macAddr;
 
     public MacManager macManager;
+    
+    public ARPTable arpTable;
+    // sync
+    public Permission arpReply = new Permission(false);
 
     public class ControlPanel extends JPanel {
         public ControlPanel() {
@@ -68,6 +72,28 @@ public class AethHost {
                     replyPacket.getRawData());
                 AetherRoute.replyReport(replyPacket);
             }
+
+            // reply if received an arp request
+            else if (PacketResolve.isArpRequestme(packet, IPAddr.buildV4FromStr(ipAddr.v()))) {
+                System.out.println(ipAddr.v()+ " ARP request received");
+                // Update the arp table by the way 
+                arpTable.addEntry(PacketResolve.getSrcIP(packet), PacketResolve.getMacSrcAddr(packet));
+                Packet replyPacket = PacketCreate.createArpReply((EthernetPacket) packet, macAddr.v());
+                macManager.sendNoWait(
+                    macPacket.getHeader().getField(HeaderFields.SRC_ADDR), 
+                    replyPacket.getRawData());
+                AetherRoute.replyReport(replyPacket);
+            }
+
+            // Update the arp table if the reply received 
+            else if(PacketResolve.isArpReplytme(packet, IPAddr.buildV4FromStr(ipAddr.v()))) {
+                System.out.println(ipAddr.v() + " ARP reply received");
+                System.out.println("src ip: " + PacketResolve.getSrcIP(packet));
+                System.out.println("src mac: " + PacketResolve.getMacSrcAddr(packet));
+                arpTable.addEntry(PacketResolve.getSrcIP(packet), PacketResolve.getMacSrcAddr(packet));
+                arpReply.permit();
+            }
+
         }
     };
 
@@ -85,6 +111,8 @@ public class AethHost {
         EthUIHost.controlPanels.add(controlPanel);
 
         macManager = new MacManager(macAddr.v(), name, frameReceivedListener);
+
+        arpTable = new ARPTable();
     }
 
     public void pingMeHandler(Packet packet) {
