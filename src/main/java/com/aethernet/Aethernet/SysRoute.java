@@ -67,12 +67,11 @@ public class SysRoute {
         if (AetherRoute.asGateway.v()) {
             // if the packet in the internet device is toward athernet
             if (aetherSubnet.matches(packet)) {
-                System.out.println(nif.getDescription());
                 AetherRoute.deliver(packet);
             }
-            // if the packet is an icmp reply to internet IP and has payload agent magic
+            // if the packet is an icmp reply to internet IP, the gateway is acting as an agent for an aether host
             // if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
-            if (PacketResolve.isReplyingMe(packet, internetIP)) {
+            if (PacketResolve.isReplyingMe(packet, internetIP) && PacketResolve.isAethernetAgent(packet)) {
                 Inet4Address newDst =
                     aetherSubnet.hostId2Address(
                         TypeConvertion.short2byte(
