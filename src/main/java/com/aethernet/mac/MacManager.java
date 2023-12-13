@@ -165,10 +165,8 @@ public class MacManager {
             physicalManager.permissions.decode.unpermit();
             switch (state) {
                 case RECEIVING_PAYLOAD:
-                    int headerAddr = frame.getHeader().getField(MacFrame.Configs.HeaderFields.DEST_ADDR);
-                    if (frame.verify() && 
-                    (headerAddr == ADDR ||
-                        (headerAddr == MacFrame.Configs.broadcastAddr && headerAddr!= ADDR))) {
+                
+                    if (frame.verify() && frame.getHeader().getField(MacFrame.Configs.HeaderFields.DEST_ADDR) == ADDR) {
                         // send ack
                         state = State.SENDING_ACK;
                         MacFrame.Header ackHeader = new MacFrame.Header();

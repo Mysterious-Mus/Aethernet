@@ -67,63 +67,6 @@ public class PacketCreate {
         return ethBuilder.build();
     }
 
-    public static EthernetPacket createArpRequest(
-            Byte srcMac, Inet4Address srcIp, Inet4Address dstIp
-    ) {
-        MacAddress ethernetAddr = MacAddress.getByAddress(new byte[]{0, 0, 0, 0, 0, srcMac});
-        MacAddress broadcastAddr = MacAddress.getByAddress(new byte[]{-1, -1, -1, -1, -1, -1});
-        ArpPacket.Builder arpBuilder = new ArpPacket.Builder();
-        arpBuilder
-            .hardwareType(ArpHardwareType.ETHERNET)
-            .protocolType(EtherType.IPV4)
-            .hardwareAddrLength((byte) MacAddress.SIZE_IN_BYTES)       // mac addr 
-            .protocolAddrLength((byte) 4)       // ip addr
-            .operation(ArpOperation.REQUEST)
-            .srcHardwareAddr(ethernetAddr)
-            .srcProtocolAddr(srcIp)
-            .dstHardwareAddr(broadcastAddr)
-            .dstProtocolAddr(dstIp);
-
-        EthernetPacket.Builder etherBuilder = new EthernetPacket.Builder();
-        etherBuilder
-            .dstAddr(broadcastAddr)
-            .srcAddr(ethernetAddr)
-            .type(EtherType.ARP)
-            .payloadBuilder(arpBuilder)
-            .paddingAtBuild(true);
-
-        return etherBuilder.build();
-    }
-
-    public static EthernetPacket createArpReply(EthernetPacket requestPacket, Byte replyMac) {
-
-        MacAddress ethernetAddr = MacAddress.getByAddress(new byte[]{0, 0, 0, 0, 0, replyMac});
-        ArpPacket arpRequest = requestPacket.get(ArpPacket.class);
-        ArpPacket.ArpHeader arpRequestHeader = arpRequest.getHeader();
-
-        ArpPacket.Builder arpReplyBuilder = new ArpPacket.Builder();
-        arpReplyBuilder
-            .hardwareType(arpRequestHeader.getHardwareType())
-            .protocolType(arpRequestHeader.getProtocolType())
-            .hardwareAddrLength(arpRequestHeader.getHardwareAddrLength())
-            .protocolAddrLength(arpRequestHeader.getProtocolAddrLength())
-            .operation(ArpOperation.REPLY)
-            .srcHardwareAddr(ethernetAddr)
-            .srcProtocolAddr(arpRequestHeader.getDstProtocolAddr())
-            .dstHardwareAddr(arpRequestHeader.getSrcHardwareAddr())
-            .dstProtocolAddr(arpRequestHeader.getSrcProtocolAddr());
-
-        EthernetPacket.Builder etherReplyBuilder = new EthernetPacket.Builder();
-        etherReplyBuilder
-            .dstAddr(requestPacket.getHeader().getSrcAddr())
-            .srcAddr(ethernetAddr)
-            .type(requestPacket.getHeader().getType())
-            .payloadBuilder(arpReplyBuilder)
-            .paddingAtBuild(true);
-
-        return etherReplyBuilder.build();
-    }
-
     public static EthernetPacket correctIpV4Checksum(EthernetPacket original) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         

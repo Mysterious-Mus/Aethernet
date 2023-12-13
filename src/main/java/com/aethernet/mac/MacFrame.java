@@ -29,7 +29,6 @@ public class MacFrame {
     public static class Configs {
         public static int addrLb = 0;
         public static int addrUb = 255;
-        public final static byte broadcastAddr = -1;   //0xff
 
         public static enum HeaderFields {
             DEST_ADDR,
