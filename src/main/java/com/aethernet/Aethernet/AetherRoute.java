@@ -68,6 +68,10 @@ public class AetherRoute {
         // send it into Aethernet
         Inet4Address dstIp = SysRoute.aetherSubnet.matches(packet) ? PacketResolve.getDstIP(packet) : gatewayIP;
         
+        // The packet forward to internet 
+        if(asGateway.v() && dstIp == gatewayIP) 
+            return;
+
         Byte dstMac = me.arpTable.query(dstIp);
 
         // arp resolve
