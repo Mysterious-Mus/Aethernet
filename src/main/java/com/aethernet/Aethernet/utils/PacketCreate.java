@@ -183,18 +183,25 @@ public class PacketCreate {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         assert ipV4Packet.contains(IcmpV4EchoPacket.class);
         IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
+        IcmpV4EchoPacket icmpEchoPacket = icmpPacket.get(IcmpV4EchoPacket.class);
+
+        IcmpV4EchoPacket.Builder icmpEchoBuilder = icmpEchoPacket.getBuilder();
+        icmpEchoBuilder = icmpEchoBuilder
+            .payloadBuilder(new UnknownPacket.Builder().rawData(newPayload.getBytes()));
 
         IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder();
         icmpBuilder = icmpBuilder
-            .payloadBuilder(new UnknownPacket.Builder().rawData(newPayload.getBytes()));
+            .payloadBuilder(icmpEchoBuilder)
+            .correctChecksumAtBuild(true);
 
         IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
         ipV4Builder = ipV4Builder
             .payloadBuilder(icmpBuilder)
             .totalLength(
                 (short)(ipV4Packet.length() + 
-                (newPayload.length() - icmpPacket.getPayload().length()))
-            );
+                (newPayload.length() - icmpEchoPacket.getPayload().length()))
+            )
+            .correctChecksumAtBuild(true);
 
         EthernetPacket.Builder ethBuilder = original.getBuilder();
         ethBuilder = ethBuilder

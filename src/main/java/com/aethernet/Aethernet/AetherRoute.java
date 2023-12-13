@@ -148,6 +148,11 @@ public class AetherRoute {
                     PacketCreate.correctIpV4Checksum((EthernetPacket)agentPacket);
                     // System.out.println("Step3:");
                     // System.out.println(agentPacket);
+                    agentPacket = 
+                    PacketCreate.changeIcmpPingPayload(
+                        (EthernetPacket) agentPacket,
+                        internetAgentMagic
+                    );
                     SysRoute.forward2Internet(agentPacket);
                 }
             }

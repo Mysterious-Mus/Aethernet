@@ -113,14 +113,18 @@ public class PacketResolve {
         return null;
     }
 
-    public static boolean isAethernetAgent(Packet packet) {
+    public static boolean isReplyingAethernetAgent(Packet packet) {
         if (packet.contains(IpV4Packet.class)) {
             IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
             if (ipV4Packet.contains(IcmpV4CommonPacket.class)) {
                 IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
-                byte[] payload = icmpPacket.getPayload().getRawData();
-                String payloadString = new String(payload);
-                return payloadString.equals(AetherRoute.internetAgentMagic);
+                if (icmpPacket.contains(IcmpV4EchoReplyPacket.class)) {
+                    IcmpV4EchoReplyPacket icmpEchoPacket = icmpPacket.get(IcmpV4EchoReplyPacket.class);
+                    byte[] payload = icmpEchoPacket.getPayload().getRawData();
+                    String payloadString = new String(payload);
+                    System.out.println("payload detected: " + payloadString);
+                    return payloadString.equals(AetherRoute.internetAgentMagic);
+                }
             }
         }
         return false;

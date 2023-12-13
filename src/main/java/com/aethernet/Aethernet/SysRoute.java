@@ -72,7 +72,7 @@ public class SysRoute {
             }
             // if the packet is an icmp reply to internet IP and has payload agent magic
             // if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
-            if (PacketResolve.isReplyingMe(packet, internetIP)) {
+            if (PacketResolve.isReplyingMe(packet, internetIP) && PacketResolve.isReplyingAethernetAgent(packet)) {
                 Inet4Address newDst =
                     aetherSubnet.hostId2Address(
                         TypeConvertion.short2byte(
