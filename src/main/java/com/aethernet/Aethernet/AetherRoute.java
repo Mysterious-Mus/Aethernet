@@ -38,7 +38,7 @@ public class AetherRoute {
     public static ConfigTerm<Boolean> asGateway;
     
     // hardcode
-    public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.0.0.1");
+    public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.0.0.2");
     public static Byte gatewayMac = 0x02;
 
     public static PcapNetworkInterface AethernetAdapter;
