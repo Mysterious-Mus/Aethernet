@@ -122,7 +122,6 @@ public class PacketResolve {
                     IcmpV4EchoReplyPacket icmpEchoPacket = icmpPacket.get(IcmpV4EchoReplyPacket.class);
                     byte[] payload = icmpEchoPacket.getPayload().getRawData();
                     String payloadString = new String(payload);
-                    System.out.println("payload detected: " + payloadString);
                     return payloadString.equals(AetherRoute.internetAgentMagic);
                 }
             }
