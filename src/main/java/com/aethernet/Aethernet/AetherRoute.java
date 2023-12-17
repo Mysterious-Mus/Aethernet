@@ -112,7 +112,7 @@ public class AetherRoute {
                     )   
                 );
         }
-        else if (!SysRoute.aetherSubnet.matches(packet)) {
+        else if (!SysRoute.aetherSubnet.dstMatches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet
             // might be a packet from a non-gateway host to ping outside
             if (asGateway.v()) {
@@ -154,6 +154,10 @@ public class AetherRoute {
                         internetAgentMagic
                     );
                     SysRoute.forward2Internet(agentPacket);
+                }
+                // if the non-gateway host wants to reply the outside
+                if (PacketResolve.isIcmpReply(packet) && PacketResolve.isReplyingAethernetAgent(packet)) {
+                    
                 }
             }
         }

@@ -44,7 +44,7 @@ public class RoutingTableEntry {
         return matches(IPAddr.buildV4FromStr(addr));
     }
 
-    public boolean matches(Packet packet) {
+    public boolean dstMatches(Packet packet) {
         Inet4Address dstIP = PacketResolve.getDstIP(packet);
         if (dstIP == null) return false;
         return matches(dstIP);

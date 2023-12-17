@@ -66,12 +66,12 @@ public class SysRoute {
         
         if (AetherRoute.asGateway.v()) {
             // if the packet in the internet device is toward athernet
-            if (aetherSubnet.matches(packet)) {
+            if (aetherSubnet.dstMatches(packet)) {
                 System.out.println(nif.getDescription());
                 AetherRoute.deliver(packet);
             }
             // if the packet is an icmp reply to internet IP and has payload agent magic
-            // if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
+            // it should be delivered to the subnet host pinging outside
             if (PacketResolve.isReplyingMe(packet, internetIP) && PacketResolve.isReplyingAethernetAgent(packet)) {
                 Inet4Address newDst =
                     aetherSubnet.hostId2Address(
@@ -88,6 +88,22 @@ public class SysRoute {
                     PacketCreate.changeIcmpEchoReplyId(
                         (EthernetPacket) packet4Aeth,
                         (short) 0x0001 // echo from cmd ping always have 0x0001 as id
+                    );
+                AetherRoute.deliver(packet4Aeth);
+            }
+            // if the outside wants to ping the subnet
+            // it should has the payload magic
+            if (PacketResolve.isPingingMe(packet, internetIP) && PacketResolve.isRequestingAethernetAgent(packet)) {
+                Inet4Address newDst =
+                    aetherSubnet.hostId2Address(
+                        TypeConvertion.short2byte(
+                            PacketResolve.getIcmpId(packet)
+                        )
+                    );
+                Packet packet4Aeth = 
+                    PacketCreate.changeDstIp(
+                        (EthernetPacket) packet,
+                        newDst 
                     );
                 AetherRoute.deliver(packet4Aeth);
             }

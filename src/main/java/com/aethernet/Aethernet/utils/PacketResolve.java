@@ -129,6 +129,22 @@ public class PacketResolve {
         return false;
     }
 
+    public static boolean isRequestingAethernetAgent(Packet packet) {
+        if (packet.contains(IpV4Packet.class)) {
+            IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
+            if (ipV4Packet.contains(IcmpV4CommonPacket.class)) {
+                IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
+                if (icmpPacket.contains(IcmpV4EchoPacket.class)) {
+                    IcmpV4EchoPacket icmpEchoPacket = icmpPacket.get(IcmpV4EchoPacket.class);
+                    byte[] payload = icmpEchoPacket.getPayload().getRawData();
+                    String payloadString = new String(payload);
+                    return payloadString.equals(AetherRoute.internetAgentMagic);
+                }
+            }
+        }
+        return false;
+    }
+
     public static short getIcmpId(Packet packet) {
         if (packet.contains(IpV4Packet.class)) {
             IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
