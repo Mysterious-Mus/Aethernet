@@ -119,8 +119,26 @@ public class PacketCreate {
         return ethBuilder.build();
     }
 
+    public static EthernetPacket changeSrcMacString(EthernetPacket original, String newSrcMac) {
+        MacAddress newSrcMacAddress = MacAddress.getByName(newSrcMac,":");
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .srcAddr(newSrcMacAddress);
+
+        return ethBuilder.build();
+    }
     public static EthernetPacket changeDstMac(EthernetPacket original, LinkLayerAddress newDstMac) {
         MacAddress newSrcMacAddress = MacAddress.getByName(newDstMac.toString());
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .dstAddr(newSrcMacAddress);
+
+        return ethBuilder.build();
+    }
+    public static EthernetPacket changeDstMacString(EthernetPacket original, String newDstMac) {
+        MacAddress newSrcMacAddress = MacAddress.getByName(newDstMac,":");
 
         EthernetPacket.Builder ethBuilder = original.getBuilder();
         ethBuilder = ethBuilder
@@ -164,7 +182,32 @@ public class PacketCreate {
         IcmpV4EchoReplyPacket.Builder icmpEchoBuilder = ((IcmpV4EchoReplyPacket)icmpPacket.getPayload()).getBuilder();
         icmpEchoBuilder = icmpEchoBuilder.identifier(newId);
 
-        IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder();
+        IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder().correctChecksumAtBuild(true);
+        icmpBuilder = icmpBuilder
+            .payloadBuilder(icmpEchoBuilder);
+
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+        ipV4Builder = ipV4Builder
+            .payloadBuilder(icmpBuilder);
+
+        EthernetPacket.Builder ethBuilder = original.getBuilder();
+        ethBuilder = ethBuilder
+            .payloadBuilder(ipV4Builder);
+
+        return ethBuilder.build();
+    }
+
+    public static EthernetPacket changeIcmpEchoId(EthernetPacket original, short newId) {
+        IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
+        if (!ipV4Packet.contains(IcmpV4EchoPacket.class)) {
+            System.out.println("not icmp echo !");
+        }
+        IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
+
+        IcmpV4EchoPacket.Builder icmpEchoBuilder = ((IcmpV4EchoPacket)icmpPacket.getPayload()).getBuilder();
+        icmpEchoBuilder = icmpEchoBuilder.identifier(newId);
+
+        IcmpV4CommonPacket.Builder icmpBuilder = icmpPacket.getBuilder().correctChecksumAtBuild(true);
         icmpBuilder = icmpBuilder
             .payloadBuilder(icmpEchoBuilder);
 

@@ -113,20 +113,39 @@ public class PacketResolve {
         return null;
     }
 
-    public static boolean isReplyingAethernetAgent(Packet packet) {
+    public static byte[] getPayload(Packet packet) {
         if (packet.contains(IpV4Packet.class)) {
             IpV4Packet ipV4Packet = packet.get(IpV4Packet.class);
             if (ipV4Packet.contains(IcmpV4CommonPacket.class)) {
-                IcmpV4CommonPacket icmpPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
-                if (icmpPacket.contains(IcmpV4EchoReplyPacket.class)) {
-                    IcmpV4EchoReplyPacket icmpEchoPacket = icmpPacket.get(IcmpV4EchoReplyPacket.class);
-                    byte[] payload = icmpEchoPacket.getPayload().getRawData();
-                    String payloadString = new String(payload);
-                    return payloadString.equals(AetherRoute.internetAgentMagic);
+                IcmpV4CommonPacket icmpV4CommonPacket = ipV4Packet.get(IcmpV4CommonPacket.class);
+                IcmpV4Type type = icmpV4CommonPacket.getHeader().getType();
+                if (type == IcmpV4Type.ECHO) {
+                    IcmpV4EchoPacket icmpV4EchoPacket = icmpV4CommonPacket.get(IcmpV4EchoPacket.class);
+                    return icmpV4EchoPacket.getPayload().getRawData();
+                }
+                else if (type == IcmpV4Type.ECHO_REPLY) {
+                    IcmpV4EchoReplyPacket icmpV4EchoReplyPacket = icmpV4CommonPacket.get(IcmpV4EchoReplyPacket.class);
+                    return icmpV4EchoReplyPacket.getPayload().getRawData();
                 }
             }
         }
-        return false;
+        System.err.println("not an invaid packet");
+        return null;
+    }
+
+    public static boolean isReplyingAethernetAgent(Packet packet) {
+        String payloadString = new String(getPayload(packet));
+        //System.out.println("payload detected: " + payloadString);
+        return payloadString.equals(AetherRoute.internetAgentMagic);
+    }
+
+    /**
+     * @param packet
+     * @return true if the packet is a ping request to a host in the subnet by pinging the gateway 
+     */
+    public static boolean isPingHost(Packet packet) {
+        byte[] payload = getPayload(packet);
+        return payload.length == 14;
     }
 
     public static short getIcmpId(Packet packet) {

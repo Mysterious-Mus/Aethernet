@@ -15,4 +15,16 @@ public class IPAddr {
         }
         return result;
     }
+
+    public static Inet4Address buildV4FromByte(byte[] x) {
+        Inet4Address result = null;
+        try {
+            result = (Inet4Address) InetAddress.getByAddress(x);
+            System.out.println(result.getHostAddress());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }
