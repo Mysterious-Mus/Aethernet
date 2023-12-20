@@ -20,8 +20,8 @@ public class ARPTable {
  
     public void addInitEntries() {
         // 172.0.0.1 -> 0x01
-        table.put(IPAddr.buildV4FromStr("172.0.0.1"), (byte) 0x01);
-        table.put(IPAddr.buildV4FromStr("172.0.0.2"), (byte) 0x02);
+        table.put(IPAddr.buildV4FromStr("172.18.5.1"), (byte) 0x01);
+        table.put(IPAddr.buildV4FromStr("172.18.5.2"), (byte) 0x02);
     }
 
     /* null for not present */
