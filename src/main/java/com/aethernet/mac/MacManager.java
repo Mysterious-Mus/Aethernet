@@ -166,7 +166,7 @@ public class MacManager {
             switch (state) {
                 case RECEIVING_PAYLOAD:
                 
-                    if (frame.verify() && frame.getHeader().getField(MacFrame.Configs.HeaderFields.DEST_ADDR) == ADDR) {
+                    if (frame.verify()) {
                         // send ack
                         state = State.SENDING_ACK;
                         MacFrame.Header ackHeader = new MacFrame.Header();

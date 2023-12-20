@@ -99,7 +99,7 @@ public class SysRoute {
             {
                 // get a ping request to someone in the cmd
                 AetherRoute.deliver(
-                    PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v())
+                    PacketCreate.correctIpV4Checksum(PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v()))
                 );
             }
         }
