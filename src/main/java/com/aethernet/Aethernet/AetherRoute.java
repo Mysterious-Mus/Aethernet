@@ -157,6 +157,9 @@ public class AetherRoute {
                 }
             }
         }
+        else {
+            SysRoute.forward2Internet(packet);
+        }
     }
 
     /**
