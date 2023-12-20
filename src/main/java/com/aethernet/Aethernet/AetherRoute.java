@@ -13,6 +13,7 @@ import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.EthernetPacket.EthernetHeader;
+import org.pcap4j.util.LinkLayerAddress;
 
 import com.aethernet.Aethernet.SysRoute.adapterListenerThread;
 import com.aethernet.Aethernet.utils.PacketResolve;
@@ -70,6 +71,7 @@ public class AetherRoute {
         // send it into Aethernet
         // arp resolve
         Byte dstMac = arpTable.query(packet);
+        System.out.println(dstMac);
         if (dstMac == null) {
             System.out.println("Aethernet router: arp not found");
             if (asGateway.v()) {
@@ -113,6 +115,7 @@ public class AetherRoute {
                 );
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
+            System.out.println("Wrong     place");
             // the packet is neither a reply to outer nor a request to aether subnet
             // might be a packet from a non-gateway host to ping outside
             if (asGateway.v()) {
@@ -158,8 +161,11 @@ public class AetherRoute {
             }
         }
         else {
-            SysRoute.forward2Internet(packet);
+            System.out.println("Forward         to      Inter");
         }
+        packet = PacketCreate.changeSrcMac((EthernetPacket)packet, SysRoute.internetMAC);
+        packet = PacketCreate.changeDstMac((EthernetPacket) packet, LinkLayerAddress.getByName("50-33-f0-e2-1e-dc","-"));
+        SysRoute.forward2Internet(packet);
     }
 
     /**

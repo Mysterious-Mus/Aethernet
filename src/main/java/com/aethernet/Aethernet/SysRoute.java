@@ -67,7 +67,6 @@ public class SysRoute {
         if (AetherRoute.asGateway.v()) {
             // if the packet in the internet device is toward athernet
             if (aetherSubnet.matches(packet)) {
-                System.out.println(nif.getDescription());
                 AetherRoute.deliver(packet);
             }
             // if the packet is an icmp reply to internet IP and has payload agent magic
@@ -99,7 +98,7 @@ public class SysRoute {
             {
                 // get a ping request to someone in the cmd
                 AetherRoute.deliver(
-                    PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v())
+                    PacketCreate.correctIpV4Checksum(PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v()))
                 );
             }
         }
