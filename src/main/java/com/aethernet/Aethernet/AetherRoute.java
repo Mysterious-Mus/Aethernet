@@ -40,6 +40,7 @@ public class AetherRoute {
     // hardcode
     public static Inet4Address dnsIP = IPAddr.buildV4FromStr("1.1.1.1");
     public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.18.5.2");
+    public static Inet4Address node1IP = IPAddr.buildV4FromStr("172.18.5.1");
     public static Byte gatewayMac = 0x02;
 
     public static PcapNetworkInterface AethernetAdapter;
@@ -103,7 +104,8 @@ public class AetherRoute {
         {
             // I get an Aethernet packet to me. Maybe I should feed it into
             // internet handle to respond system ack or so
-            if (PacketResolve.isReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
+            if (PacketResolve.isPingReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())) ||
+                PacketResolve.isDnsReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
                 SysRoute.forward2Internet(
                     PacketCreate.changeDstMac(
                         PacketCreate.correctIpV4Checksum(
@@ -118,11 +120,9 @@ public class AetherRoute {
                 PacketCreate.changeDstIp(
                     (EthernetPacket) packet, dnsIP
                     );
-
+                agentPacket = PacketCreate.changeSrcIp((EthernetPacket) agentPacket, SysRoute.internetIP);
+                agentPacket = PacketCreate.correctIpV4Checksum((EthernetPacket) agentPacket);
                 SysRoute.forward2Internet(agentPacket);
-            }
-            else if (PacketResolve.isDnsReply(packet)) {
-                SysRoute.forward2Internet(packet);
             }
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {

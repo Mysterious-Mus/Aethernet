@@ -73,13 +73,15 @@ public class SysRoute {
                 packet = PacketCreate.changeSrcIp((EthernetPacket)packet, AetherRoute.gatewayIP);
             }
             // if the packet in the internet device is toward athernet
+            // scenario: using node 3 to ping node 1
+            // otherwise the dst of the packet should be the internet ip of node2
             if (aetherSubnet.matches(packet)) {
                 System.out.println(nif.getDescription());
                 AetherRoute.deliver(packet);
             }
             // if the packet is an icmp reply to internet IP and has payload agent magic
             // if (PacketResolve.isAethernetAgent(packet) && PacketResolve.isReplyingMe(packet, internetIP)) {
-            if (PacketResolve.isReplyingMe(packet, internetIP) && PacketResolve.isReplyingAethernetAgent(packet)) {
+            if (PacketResolve.isPingReplyingMe(packet, internetIP) && PacketResolve.isReplyingAethernetAgent(packet)) {
                 Inet4Address newDst =
                     aetherSubnet.hostId2Address(
                         TypeConvertion.short2byte(
@@ -96,6 +98,11 @@ public class SysRoute {
                         (EthernetPacket) packet4Aeth,
                         (short) 0x0001 // echo from cmd ping always have 0x0001 as id
                     );
+                AetherRoute.deliver(packet4Aeth);
+            }
+            // we have to deliver all the dns replys to node1
+            if (PacketResolve.isDnsReply(packet)) {
+                Packet packet4Aeth = PacketCreate.changeDstIp((EthernetPacket) packet, AetherRoute.node1IP);
                 AetherRoute.deliver(packet4Aeth);
             }
         }

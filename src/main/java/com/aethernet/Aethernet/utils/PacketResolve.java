@@ -46,8 +46,19 @@ public class PacketResolve {
         return packet.contains(IcmpV4EchoReplyPacket.class);
     }
 
-    public static boolean isReplyingMe(Packet packet, Inet4Address myIp) {
+    public static boolean isPingReplyingMe(Packet packet, Inet4Address myIp) {
         if (isIcmpReply(packet)) {
+            IpV4Packet.IpV4Header ipv4Header = packet.get(IpV4Packet.class).getHeader();
+            Inet4Address dstAddr = ipv4Header.getDstAddr();
+            if (dstAddr.equals(myIp)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isDnsReplyingMe(Packet packet, Inet4Address myIp) {
+        if (isDnsReply(packet)) {
             IpV4Packet.IpV4Header ipv4Header = packet.get(IpV4Packet.class).getHeader();
             Inet4Address dstAddr = ipv4Header.getDstAddr();
             if (dstAddr.equals(myIp)) {
