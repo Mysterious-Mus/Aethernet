@@ -62,9 +62,16 @@ public class SysRoute {
     }
 
     private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
-        if (!PacketResolve.isIcmpPing(packet) && !PacketResolve.isIcmpReply(packet)) return;
+        if (!PacketResolve.isIcmpPing(packet) && !PacketResolve.isIcmpReply(packet) && 
+            !PacketResolve.isDnsQuery(packet) && !PacketResolve.isDnsReply(packet)) 
+            return;
         
         if (AetherRoute.asGateway.v()) {
+
+            if(PacketResolve.isDnsReply(packet)) {
+                // host set gateway as the local name server 
+                packet = PacketCreate.changeSrcIp((EthernetPacket)packet, AetherRoute.gatewayIP);
+            }
             // if the packet in the internet device is toward athernet
             if (aetherSubnet.matches(packet)) {
                 System.out.println(nif.getDescription());
@@ -94,10 +101,10 @@ public class SysRoute {
         }
         else {
             // if I'm a host, not the gateway
-            if (PacketResolve.isIcmpPing(packet) 
+            if ((PacketResolve.isIcmpPing(packet) || PacketResolve.isDnsQuery(packet))
                 && PacketResolve.getSrcIP(packet).equals(internetIP)) 
             {
-                // get a ping request to someone in the cmd
+                // get a ping request or dns query to someone in the cmd 
                 AetherRoute.deliver(
                     PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v())
                 );

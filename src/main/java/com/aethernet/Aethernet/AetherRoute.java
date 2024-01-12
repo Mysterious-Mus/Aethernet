@@ -38,6 +38,7 @@ public class AetherRoute {
     public static ConfigTerm<Boolean> asGateway;
     
     // hardcode
+    public static Inet4Address dnsIP = IPAddr.buildV4FromStr("1.1.1.1");
     public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.18.5.2");
     public static Byte gatewayMac = 0x02;
 
@@ -111,6 +112,18 @@ public class AetherRoute {
                         SysRoute.internetMAC
                     )   
                 );
+            else if (PacketResolve.isDnsQuery(packet) && asGateway.v()) {
+                // query the local dns through gateway 
+                Packet agentPacket =  
+                PacketCreate.changeDstIp(
+                    (EthernetPacket) packet, dnsIP
+                    );
+
+                SysRoute.forward2Internet(agentPacket);
+            }
+            else if (PacketResolve.isDnsReply(packet)) {
+                SysRoute.forward2Internet(packet);
+            }
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet

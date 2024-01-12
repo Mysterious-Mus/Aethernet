@@ -17,6 +17,8 @@ import com.aethernet.physical.transmit.AetherPacker;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
 import java.net.Inet4Address;
+
+import org.pcap4j.packet.DnsPacket;
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
 import org.pcap4j.packet.IcmpV4EchoPacket;
@@ -59,6 +61,22 @@ public class PacketResolve {
         return packet.contains(IcmpV4CommonPacket.class);
     }
 
+    public static boolean isDnsQuery(Packet packet) {
+        if(packet.contains(DnsPacket.class)) {
+            DnsPacket dnsPacket = packet.get(DnsPacket.class);
+            return !dnsPacket.getHeader().isResponse();
+        }
+        return false;
+    }
+
+    public static boolean isDnsReply(Packet packet) {
+        if(packet.contains(DnsPacket.class)) {
+            DnsPacket dnsPacket = packet.get(DnsPacket.class);
+            return dnsPacket.getHeader().isResponse();
+        }
+        return false;
+    }
+    
     public static void printIcmpInfo(Packet packet) {
         if (!isIcmpPing(packet)) {
             return;
