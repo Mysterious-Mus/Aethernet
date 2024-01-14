@@ -7,7 +7,9 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.UdpPacket;
 import org.pcap4j.packet.IcmpV4EchoReplyPacket.IcmpV4EchoReplyHeader;
+import org.pcap4j.packet.UdpPacket.UdpHeader;
 import org.pcap4j.packet.namednumber.EtherType;
 import org.pcap4j.packet.namednumber.IcmpV4Type;
 
@@ -88,6 +90,13 @@ public class PacketResolve {
             dnsPacket.getHeader().getAnswers().get(0).getName().getName().equals("example.com");
         }
         return false;
+    }
+
+    public static int DnsQueryPort(Packet packet) {
+        if (isDnsQuery(packet)) {
+            return packet.get(UdpPacket.class).getHeader().getSrcPort().valueAsInt();
+        }
+        return 0;
     }
 
     public static void printIcmpInfo(Packet packet) {

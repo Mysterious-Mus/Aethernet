@@ -38,7 +38,7 @@ public class AetherRoute {
     public static ConfigTerm<Boolean> asGateway;
     
     // hardcode
-    public static Inet4Address dnsIP = IPAddr.buildV4FromStr("1.1.1.1");
+    public static Inet4Address dnsIP = IPAddr.buildV4FromStr("10.15.44.11");
     public static Inet4Address gatewayIP = IPAddr.buildV4FromStr("172.18.5.2");
     public static Inet4Address node1IP = IPAddr.buildV4FromStr("172.18.5.1");
     public static Byte gatewayMac = 0x02;
@@ -121,7 +121,9 @@ public class AetherRoute {
                     (EthernetPacket) packet, dnsIP
                     );
                 agentPacket = PacketCreate.changeSrcIp((EthernetPacket) agentPacket, SysRoute.internetIP);
+                agentPacket = PacketCreate.changeSrcMac((EthernetPacket) agentPacket, SysRoute.internetMAC);
                 agentPacket = PacketCreate.correctIpV4Checksum((EthernetPacket) agentPacket);
+                agentPacket = PacketCreate.correctUDPCheckSum((EthernetPacket) agentPacket);
                 SysRoute.forward2Internet(agentPacket);
             }
         }
