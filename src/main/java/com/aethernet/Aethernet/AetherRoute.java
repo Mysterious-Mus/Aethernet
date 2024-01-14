@@ -106,8 +106,7 @@ public class AetherRoute {
         {
             // I get an Aethernet packet to me. Maybe I should feed it into
             // internet handle to respond system ack or so
-            if (PacketResolve.isPingReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())) ||
-                PacketResolve.isDnsReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
+            if (PacketResolve.isPingReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v())))
                 SysRoute.forward2Internet(
                     PacketCreate.changeDstMac(
                         PacketCreate.correctIpV4Checksum(
@@ -116,6 +115,18 @@ public class AetherRoute {
                         SysRoute.internetMAC
                     )   
                 );
+            else if (PacketResolve.isDnsReplyingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v()))) {
+                SysRoute.forward2Internet(
+                    PacketCreate.correctUDPCheckSum(
+                        PacketCreate.changeDstMac(
+                            PacketCreate.correctIpV4Checksum(
+                                PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                            ),
+                            SysRoute.internetMAC
+                        )   
+                    )
+                );
+            }
             else if (PacketResolve.isDnsQuery(packet) && asGateway.v()) {
                 // query the local dns through gateway 
                 Packet agentPacket =  

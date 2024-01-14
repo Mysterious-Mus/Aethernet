@@ -229,7 +229,7 @@ public class TxRx {
             // }
 
             // report groupdiff
-            ArrayList<Boolean> boolList =  TypeConvertion.byteArray2BooleanList(data);
+            // ArrayList<Boolean> boolList =  TypeConvertion.byteArray2BooleanList(data);
 
             // check the whole package
             // boolean failed = false;

@@ -160,6 +160,7 @@ public class MacManager {
         }
 
         private ArrayList<Byte> fragBuffer = new ArrayList<Byte>();
+        private int expectingSeqNum = 0;
         @Override
         public synchronized void frameReceived(MacFrame frame) {
             // first disable decoding
@@ -189,31 +190,34 @@ public class MacManager {
                         physicalManager.permissions.decode.unpermit();
                         idleNot.permit();
                         state = State.IDLE;
-
                         // frameReceivedListener.frameReceived(frame);
                         // buffer the payload if not last frag
                         int fragID = frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM);
-                        int fragCnt = frame.getHeader().getField(MacFrame.Configs.HeaderFields.FRAGMENT_NUM);
-                        if (fragID < fragCnt - 1) {
-                            // print message
-                            System.out.println(appName + " frame " + fragID + " received, not last frag");
-                            // buffer the payload
-                            for (byte b: frame.getData()) {
-                                fragBuffer.add(b);
+                        if (fragID == expectingSeqNum) {
+                            int fragCnt = frame.getHeader().getField(MacFrame.Configs.HeaderFields.FRAGMENT_NUM);
+                            if (fragID < fragCnt - 1) {
+                                // print message
+                                System.out.println(appName + " frame " + fragID + " received, not last frag");
+                                // buffer the payload
+                                for (byte b: frame.getData()) {
+                                    fragBuffer.add(b);
+                                }
+                                expectingSeqNum ++;
                             }
-                        }
-                        else {
-                            // print message
-                            System.out.println(appName + " frame " + fragID + " received, last frag");
-                            // buffer the payload
-                            for (byte b: frame.getData()) {
-                                fragBuffer.add(b);
+                            else {
+                                // print message
+                                System.out.println(appName + " frame " + fragID + " received, last frag");
+                                // buffer the payload
+                                for (byte b: frame.getData()) {
+                                    fragBuffer.add(b);
+                                }
+                                // send the whole payload to upper layer
+                                byte[] payload = TypeConvertion.byteList2byteArray(fragBuffer);
+                                frameReceivedListener.frameReceived(payload);
+                                // clear the buffer
+                                fragBuffer.clear();
+                                expectingSeqNum = 0;
                             }
-                            // send the whole payload to upper layer
-                            byte[] payload = TypeConvertion.byteList2byteArray(fragBuffer);
-                            frameReceivedListener.frameReceived(payload);
-                            // clear the buffer
-                            fragBuffer.clear();
                         }
                     }
                     else {
