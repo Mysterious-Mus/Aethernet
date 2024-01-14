@@ -122,13 +122,7 @@ public class PacketResolve {
             Inet4Address srcAddr = ipV4Header.getSrcAddr();
             Inet4Address dstAddr = ipV4Header.getDstAddr();
             if (dstAddr.equals(myIp)) {
-                if (packet.contains(IcmpV4CommonPacket.class)) {
-                    IcmpV4CommonPacket icmpV4CommonPacket = packet.get(IcmpV4CommonPacket.class);
-                    // if type is echo
-                    if (icmpV4CommonPacket.getHeader().getType() == IcmpV4Type.ECHO) {
-                        return true;
-                    }
-                }
+                return packet.contains(IcmpV4EchoPacket.class);
             }
         }
         return false;
