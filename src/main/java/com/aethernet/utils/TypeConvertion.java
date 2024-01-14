@@ -87,4 +87,12 @@ public class TypeConvertion {
     public static byte short2byte(short x) {
         return (byte) x;
     }
+
+    public static byte[] byteList2byteArray(ArrayList<Byte> byteList) {
+        byte[] byteArray = new byte[byteList.size()];
+        for (int i = 0; i < byteList.size(); i++) {
+            byteArray[i] = byteList.get(i);
+        }
+        return byteArray;
+    }
 }

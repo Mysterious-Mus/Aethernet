@@ -38,7 +38,8 @@ public class MacFrame {
              * Payload length in bytes
              */
             Len,
-            SEQUENCE_NUM, // to prevent the loss of ACK
+            SEQUENCE_NUM, // to prevent the loss of ACK, also indicate the fragment id
+            FRAGMENT_NUM,
             CRC8,
             COUNT;
 

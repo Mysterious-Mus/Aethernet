@@ -18,6 +18,7 @@ import com.aethernet.Aethernet.SysRoute.adapterListenerThread;
 import com.aethernet.Aethernet.utils.PacketResolve;
 import com.aethernet.config.EthConfig.ConfigTerm;
 import com.aethernet.mac.MacFrame;
+import com.aethernet.mac.MacFrame.Configs.HeaderFields;
 import com.aethernet.mac.MacManager;
 import com.aethernet.Aethernet.SysRoute.Configs;
 import com.aethernet.mac.MacManager;
@@ -57,10 +58,6 @@ public class AetherRoute {
      * @param packet
      */
     public static void deliver(Packet packet) {
-        // if src is my internet IP, then translate into my aethernet ip
-        if (PacketResolve.getSrcIP(packet).equals(SysRoute.internetIP)) {
-            packet = PacketCreate.changeSrcIp((EthernetPacket) packet, me.ipAddr.v());
-        }
         // feed into Aethernet adapter, then wireshark can monitor the traffic
         try {
             AethernetHandle.sendPacket(packet);
@@ -97,6 +94,11 @@ public class AetherRoute {
         }
         catch (PcapNativeException | NotOpenException e) {
             e.printStackTrace();
+        }
+        // reply if ping me
+        if (PacketResolve.isPingingMe(packet, IPAddr.buildV4FromStr(me.ipAddr.v()))) {
+            Packet replyPacket = PacketCreate.createReplyPacket((EthernetPacket) packet);
+            deliver(replyPacket);
         }
 
         if (PacketResolve.getDstIP(packet).equals(

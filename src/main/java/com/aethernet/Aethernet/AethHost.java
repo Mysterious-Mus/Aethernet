@@ -55,19 +55,9 @@ public class AethHost {
 
     FrameReceivedListener frameReceivedListener = new FrameReceivedListener() {
         @Override
-        public void frameReceived(MacFrame macPacket) {
-            byte[] data = macPacket.getData(); // your byte array
+        public void frameReceived(byte[] data) {
             Packet packet = PacketResolve.byteArr2Packet(data);
             AetherRoute.receive(packet);
-
-            // reply if ping me
-            if (PacketResolve.isPingingMe(packet, IPAddr.buildV4FromStr(ipAddr.v()))) {
-                Packet replyPacket = PacketCreate.createReplyPacket((EthernetPacket) packet);
-                macManager.sendNoWait(
-                    macPacket.getHeader().getField(HeaderFields.SRC_ADDR), 
-                    replyPacket.getRawData());
-                AetherRoute.replyReport(replyPacket);
-            }
         }
     };
 

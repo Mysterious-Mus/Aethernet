@@ -47,7 +47,6 @@ public class TxRx {
     private int receiveLength;
     private int errPackCnt;
     private int errCrcCnt;
-    private ArrayList<MacFrame> receivedFrames = new ArrayList<MacFrame>();
     private Notifier transmitNotify = new Notifier();
 
     private class TransmitThread extends Thread {
@@ -76,7 +75,6 @@ public class TxRx {
     }
 
     public void receive() {
-        receivedFrames.clear();
         macManager.syncAddr(Ctrl.getHostAddr());
         isReceiving = true;
         errPackCnt = 0;
@@ -208,67 +206,63 @@ public class TxRx {
 
     private MacManager.FrameReceivedListener frameReceivedListener = new MacManager.FrameReceivedListener() {
         @Override
-        public void frameReceived(MacFrame frame) {
+        public void frameReceived(byte[] data) {
             if (!isReceiving) {
                 return;
             }
-            // check repeat
-            if (!receivedFrames.isEmpty() &&
-                frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) == 
-                receivedFrames.get(receivedFrames.size() - 1).getHeader()
-                .getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM))
-            {        
-                return;
-            }
-            // check skip
-            if (!receivedFrames.isEmpty() &&
-                frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) != 
-                receivedFrames.get(receivedFrames.size() - 1).getHeader()
-                .getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) + 1
-            )
-            {        
-                System.out.println("package" + receivedFrames.size() + " skipped");
-            }
-            // push in this frame
-            receivedFrames.add(frame);
+            // // check repeat
+            // if (!receivedFrames.isEmpty() &&
+            //     frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) == 
+            //     receivedFrames.get(receivedFrames.size() - 1).getHeader()
+            //     .getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM))
+            // {        
+            //     return;
+            // }
+            // // check skip
+            // if (!receivedFrames.isEmpty() &&
+            //     frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) != 
+            //     receivedFrames.get(receivedFrames.size() - 1).getHeader()
+            //     .getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM) + 1
+            // )
+            // {        
+            //     System.out.println("package" + receivedFrames.size() + " skipped");
+            // }
 
             // report groupdiff
-            ArrayList<Boolean> data =  TypeConvertion.byteArray2BooleanList(frame.getData());
-
-            int packIdx = receivedFrames.size() - 1;
+            ArrayList<Boolean> boolList =  TypeConvertion.byteArray2BooleanList(data);
 
             // check the whole package
-            boolean failed = false;
-            for (int i = 0; i < data.size(); i++) {
-                if (packIdx * data.size() + i < transmitted.size()) {
-                    if (transmitted.get(packIdx * data.size() + i) != data.get(i)) {
-                        failed = true;
-                        break;
-                    }
-                }
-            }
+            // boolean failed = false;
+            // for (int i = 0; i < data.size(); i++) {
+            //     if (packIdx * data.size() + i < transmitted.size()) {
+            //         if (transmitted.get(packIdx * data.size() + i) != data.get(i)) {
+            //             failed = true;
+            //             break;
+            //         }
+            //     }
+            // }
             
-            if (failed) {
-                System.out.println("package" + packIdx + " brute force check failed");
-            }
+            // if (failed) {
+            //     System.out.println("package" + packIdx + " brute force check failed");
+            // }
 
-            errCrcCnt += frame.verify() ? 0 : 1;
+            // errCrcCnt += frame.verify() ? 0 : 1;
 
             /* File write and log info */
-            byte[] dataWrite = frame.getData();
-            if (receivedFrames.size() == receiveLength) {
-                // trim the last package
-                assert(transmitted.size() % 8 == 0); // Transmitted data should be byte aligned
-                dataWrite = Arrays.copyOfRange(dataWrite,0, 
-                                transmitted.size() / 8 - 
-                                (receiveLength - 1) * MacFrame.Configs.payloadMaxNumBytes.v());
-                // stop receiving
-                isReceiving = false;
-                // print errPackCnt and errCrcCnt
-                System.out.println("errPackCnt: " + errPackCnt);
-                System.out.println("errCrcCnt: " + errCrcCnt);
-            }
-            FileOp.outputBin(dataWrite, name + " OUTPUT.bin", receivedFrames.size() == 1);
+            // byte[] dataWrite = frame.getData();
+            // if (receivedFrames.size() == receiveLength) {
+            //     // trim the last package
+            //     assert(transmitted.size() % 8 == 0); // Transmitted data should be byte aligned
+            //     dataWrite = Arrays.copyOfRange(dataWrite,0, 
+            //                     transmitted.size() / 8 - 
+            //                     (receiveLength - 1) * MacFrame.Configs.payloadMaxNumBytes.v());
+            //     // stop receiving
+            //     isReceiving = false;
+            //     // print errPackCnt and errCrcCnt
+            //     System.out.println("errPackCnt: " + errPackCnt);
+            //     System.out.println("errCrcCnt: " + errCrcCnt);
+            // }
+            // FileOp.outputBin(dataWrite, name + " OUTPUT.bin", receivedFrames.size() == 1);
         }
     };
 }

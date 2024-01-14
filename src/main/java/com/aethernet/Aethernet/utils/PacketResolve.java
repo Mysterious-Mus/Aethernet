@@ -86,8 +86,9 @@ public class PacketResolve {
     public static boolean isDnsReply(Packet packet) {
         if(packet.contains(DnsPacket.class)) {
             DnsPacket dnsPacket = packet.get(DnsPacket.class);
-            return dnsPacket.getHeader().isResponse() && 
-            dnsPacket.getHeader().getAnswers().get(0).getName().getName().equals("example.com");
+            if (dnsPacket.getHeader().isResponse()) {
+                return dnsPacket.getHeader().getQuestions().get(0).getQName().getName().equals("example.com");
+            }
         }
         return false;
     }

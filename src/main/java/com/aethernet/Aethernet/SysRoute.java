@@ -67,11 +67,6 @@ public class SysRoute {
             return;
         
         if (AetherRoute.asGateway.v()) {
-
-            if(PacketResolve.isDnsReply(packet)) {
-                // host set gateway as the local name server 
-                packet = PacketCreate.changeSrcIp((EthernetPacket)packet, AetherRoute.gatewayIP);
-            }
             // if the packet in the internet device is toward athernet
             // scenario: using node 3 to ping node 1
             // otherwise the dst of the packet should be the internet ip of node2
@@ -103,6 +98,10 @@ public class SysRoute {
             // we have to deliver all the dns replys to node1
             if (PacketResolve.isDnsReply(packet)) {
                 Packet packet4Aeth = PacketCreate.changeDstIp((EthernetPacket) packet, AetherRoute.node1IP);
+                packet4Aeth = PacketCreate.changeSrcIp((EthernetPacket)packet4Aeth, AetherRoute.gatewayIP);
+                packet4Aeth = PacketCreate.correctIpV4Checksum((EthernetPacket) packet4Aeth);
+                packet4Aeth = PacketCreate.correctUDPCheckSum((EthernetPacket) packet4Aeth);
+                System.out.println("DNS reply to node1 " + PacketResolve.getDstIP(packet4Aeth));
                 AetherRoute.deliver(packet4Aeth);
             }
         }

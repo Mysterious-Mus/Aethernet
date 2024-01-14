@@ -40,7 +40,7 @@ public class MacManager {
     }
 
     public interface FrameReceivedListener {
-        public void frameReceived(MacFrame frame);
+        public void frameReceived(byte[] data);
     }
     private FrameReceivedListener frameReceivedListener;
 
@@ -159,6 +159,7 @@ public class MacManager {
             }
         }
 
+        private ArrayList<Byte> fragBuffer = new ArrayList<Byte>();
         @Override
         public synchronized void frameReceived(MacFrame frame) {
             // first disable decoding
@@ -189,7 +190,31 @@ public class MacManager {
                         idleNot.permit();
                         state = State.IDLE;
 
-                        frameReceivedListener.frameReceived(frame);
+                        // frameReceivedListener.frameReceived(frame);
+                        // buffer the payload if not last frag
+                        int fragID = frame.getHeader().getField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM);
+                        int fragCnt = frame.getHeader().getField(MacFrame.Configs.HeaderFields.FRAGMENT_NUM);
+                        if (fragID < fragCnt - 1) {
+                            // print message
+                            System.out.println(appName + " frame " + fragID + " received, not last frag");
+                            // buffer the payload
+                            for (byte b: frame.getData()) {
+                                fragBuffer.add(b);
+                            }
+                        }
+                        else {
+                            // print message
+                            System.out.println(appName + " frame " + fragID + " received, last frag");
+                            // buffer the payload
+                            for (byte b: frame.getData()) {
+                                fragBuffer.add(b);
+                            }
+                            // send the whole payload to upper layer
+                            byte[] payload = TypeConvertion.byteList2byteArray(fragBuffer);
+                            frameReceivedListener.frameReceived(payload);
+                            // clear the buffer
+                            fragBuffer.clear();
+                        }
                     }
                     else {
                         // not my frame or broken frame
@@ -297,10 +322,12 @@ public class MacManager {
         long startTime = System.currentTimeMillis();
         // make frame header
         MacFrame.Header header = new MacFrame.Header();
+        int frameNum = Math.ceilDiv(Math.ceilDiv(bitString.size(), 8), MacFrame.Configs.payloadMaxNumBytes.v());
         header.SetField(MacFrame.Configs.HeaderFields.DEST_ADDR, dstAddr);
         header.SetField(MacFrame.Configs.HeaderFields.SRC_ADDR, ADDR);
         header.SetField(MacFrame.Configs.HeaderFields.TYPE, MacFrame.Configs.Types.DATA.getValue());
         header.SetField(MacFrame.Configs.HeaderFields.SEQUENCE_NUM, (byte) -1);
+        header.SetField(MacFrame.Configs.HeaderFields.FRAGMENT_NUM, (byte) frameNum);
 
         MacFrame[] frames = distribute(header, bitString);
 
