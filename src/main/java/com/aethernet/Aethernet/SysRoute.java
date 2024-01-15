@@ -83,10 +83,6 @@ public class SysRoute {
     }
 
     private static void adapterReceiveHandler(PcapNetworkInterface nif, Packet packet) {
-        if (!PacketResolve.isIcmpPing(packet) && !PacketResolve.isIcmpReply(packet) && 
-            !PacketResolve.isDnsQuery(packet) && !PacketResolve.isDnsReply(packet)) 
-            return;
-        
         if (AetherRoute.asGateway.v()) {
             // if the packet in the internet device is toward athernet
             // scenario: using node 3 to ping node 1
@@ -230,4 +226,8 @@ public class SysRoute {
 
         }
     }
+
+    // public static void main(String[] args) {
+    //     System.out.println(IPAddr.buildV4FromStr("93.184.216.34").equals(IPAddr.buildV4FromStr("93.184.216.35")));
+    // }
 }
