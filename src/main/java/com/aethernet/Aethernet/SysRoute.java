@@ -23,8 +23,11 @@ import org.pcap4j.util.LinkLayerAddress;
 import org.pcap4j.util.MacAddress;
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
+
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IcmpV4CommonPacket;
@@ -53,10 +56,22 @@ public class SysRoute {
     public static WhiteList<String> handleDns = new WhiteList<String>(new String[] {"example.com"});
     public static WhiteList<Inet4Address> handleTcp = new WhiteList<Inet4Address>(
         new Inet4Address[] {IPAddr.buildV4FromStr("93.184.216.34")});
+    public static int initTcpSeqNum = 0x21345768;
+    public static boolean seqnumShiftSet = false;
+    public static int tcpSeqNumShift;
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 
     public static void forward2Internet(Packet packet) {
+        int port = PacketResolve.getSrcPort(packet);
+        try {
+            // Create a server socket and bind it to the specified port
+            ServerSocket serverSocket = new ServerSocket(port);
+            System.out.println("Listening on port " + port);
+        } catch (IOException e) {
+            System.out.println("Could not listen on port " + port);
+        }
+
         try {
             internetHandle.sendPacket(packet);
         }
@@ -108,9 +123,17 @@ public class SysRoute {
                 System.out.println("DNS reply to node1 " + PacketResolve.getDstIP(packet4Aeth));
                 AetherRoute.deliver(packet4Aeth);
             }
+            // deliver TCP replys to node1
+            if (PacketResolve.isTcpReplyPacket(packet)) {
+                EthernetPacket packet4Aeth = PacketCreate.changeDstIp((EthernetPacket) packet, AetherRoute.node1IP);
+                packet4Aeth = PacketCreate.correctIpV4Checksum((EthernetPacket) packet4Aeth);
+                packet4Aeth = PacketCreate.correctUDPCheckSum((EthernetPacket) packet4Aeth);
+                AetherRoute.deliver(packet4Aeth);
+            }
         }
         else {
             // if I'm a host, not the gateway
+            // I may raise icmp ping or dns query
             if ((PacketResolve.isIcmpPing(packet) || PacketResolve.isDnsQuery(packet))
                 && PacketResolve.getSrcIP(packet).equals(internetIP)) 
             {
@@ -118,6 +141,20 @@ public class SysRoute {
                 AetherRoute.deliver(
                     PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v())
                 );
+            }
+            // I may have tcp packets to transmit
+            if (PacketResolve.isTcpRequestPacket(packet)) {
+                // change src ip and seqnum, then forward to gateway
+                EthernetPacket packet4Aeth = PacketCreate.changeSrcIp((EthernetPacket) packet, AetherRoute.me.ipAddr.v());
+                if (!seqnumShiftSet) {
+                    seqnumShiftSet = true;
+                    tcpSeqNumShift = initTcpSeqNum - PacketResolve.getTcpSequenceNumber(packet);
+                }
+                int newSeqnum = PacketResolve.getTcpSequenceNumber(packet) + tcpSeqNumShift;
+                packet4Aeth = PacketCreate.changeTcpSequenceNumber(packet4Aeth, newSeqnum);
+                packet4Aeth = PacketCreate.correctIpV4Checksum(packet4Aeth);
+                packet4Aeth = PacketCreate.correctTCPCheckSum(packet4Aeth);
+                AetherRoute.deliver(packet4Aeth);
             }
         }
     }

@@ -139,6 +139,19 @@ public class AetherRoute {
                 agentPacket = PacketCreate.correctUDPCheckSum((EthernetPacket) agentPacket);
                 SysRoute.forward2Internet(agentPacket);
             }
+            // tcp reply
+            else if (PacketResolve.isTcpReplyPacket(packet)) {
+                SysRoute.forward2Internet(
+                    PacketCreate.correctTCPCheckSum(
+                        PacketCreate.changeDstMac(
+                            PacketCreate.correctIpV4Checksum(
+                                PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                            ),
+                            SysRoute.internetMAC
+                        )   
+                    )
+                );
+            }
         }
         else if (!SysRoute.aetherSubnet.matches(packet)) {
             // the packet is neither a reply to outer nor a request to aether subnet
@@ -181,6 +194,15 @@ public class AetherRoute {
                         (EthernetPacket) agentPacket,
                         internetAgentMagic
                     );
+                    SysRoute.forward2Internet(agentPacket);
+                }
+                // if node 1 is forwarding its TCP connection with outside
+                if (PacketResolve.isTcpRequestPacket(packet)) {
+                    // change src IP to gateway, change MAC
+                    EthernetPacket agentPacket = PacketCreate.changeSrcIp((EthernetPacket) packet, SysRoute.internetIP);
+                    agentPacket = PacketCreate.changeSrcMac(agentPacket, SysRoute.internetMAC);
+                    agentPacket = PacketCreate.correctIpV4Checksum((EthernetPacket) agentPacket);
+                    agentPacket = PacketCreate.correctTCPCheckSum((EthernetPacket) agentPacket);
                     SysRoute.forward2Internet(agentPacket);
                 }
             }

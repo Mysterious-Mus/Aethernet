@@ -241,4 +241,56 @@ public class PacketCreate {
     
         return etherBuilder.build();
     }
+
+    public static EthernetPacket correctTCPCheckSum(EthernetPacket original) {
+        // Get the TCP packet
+        TcpPacket tcpPacket = original.get(TcpPacket.class);
+        TcpPacket.Builder tcpBuilder = tcpPacket.getBuilder();
+    
+        // Get the IP packet
+        IpV4Packet ipV4Packet = original.get(IpV4Packet.class);
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+    
+        // Build a new TCP packet with the correct checksum
+        tcpBuilder.correctChecksumAtBuild(true);
+        tcpBuilder.srcAddr(ipV4Packet.getHeader().getSrcAddr());
+        tcpBuilder.dstAddr(ipV4Packet.getHeader().getDstAddr());
+    
+        // Build a new IP packet with the new TCP packet
+        ipV4Builder.payloadBuilder(tcpBuilder);
+        ipV4Builder.correctChecksumAtBuild(true);
+        ipV4Builder.correctLengthAtBuild(true);
+    
+        // Build a new Ethernet packet with the new IP packet
+        EthernetPacket.Builder etherBuilder = original.getBuilder();
+        etherBuilder.payloadBuilder(ipV4Builder);
+        etherBuilder.paddingAtBuild(true);
+    
+        return etherBuilder.build();
+    }
+
+    public static EthernetPacket changeTcpSequenceNumber(EthernetPacket original, int newSequenceNumber) {
+        // Get the TCP packet
+        TcpPacket tcpPacket = original.get(TcpPacket.class);
+        TcpPacket.Builder tcpBuilder = tcpPacket.getBuilder();
+    
+        // Change the sequence number
+        tcpBuilder.sequenceNumber(newSequenceNumber);
+    
+        // Get the IP packet
+        IpV4Packet ipV4Packet = original.get(IpV4Packet.class);
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+    
+        // Build a new IP packet with the new TCP packet
+        ipV4Builder.payloadBuilder(tcpBuilder);
+        ipV4Builder.correctChecksumAtBuild(true);
+        ipV4Builder.correctLengthAtBuild(true);
+    
+        // Build a new Ethernet packet with the new IP packet
+        EthernetPacket.Builder etherBuilder = original.getBuilder();
+        etherBuilder.payloadBuilder(ipV4Builder);
+        etherBuilder.paddingAtBuild(true);
+    
+        return etherBuilder.build();
+    }
 }

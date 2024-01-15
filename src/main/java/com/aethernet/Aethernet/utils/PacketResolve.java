@@ -182,8 +182,36 @@ public class PacketResolve {
         return 0;
     }
 
-    public boolean isTcpPacket(Packet packet) {
+    public static boolean isTcpRequestPacket(Packet packet) {
         return packet.contains(TcpPacket.class) &&
-            (SysRoute.handleTcp.contains(getDstIP(packet)) || SysRoute.handleTcp.contains(getSrcIP(packet)));
+            SysRoute.handleTcp.contains(getDstIP(packet));
+    }
+
+    public static boolean isTcpReplyPacket(Packet packet) {
+        return packet.contains(TcpPacket.class) &&
+            SysRoute.handleTcp.contains(getSrcIP(packet));
+    }
+
+    public static int getSrcPort(Packet packet) {
+        TcpPacket tcpPacket = packet.get(TcpPacket.class);
+        if (tcpPacket != null) {
+            return tcpPacket.getHeader().getSrcPort().value();
+        }
+    
+        UdpPacket udpPacket = packet.get(UdpPacket.class);
+        if (udpPacket != null) {
+            return udpPacket.getHeader().getSrcPort().value();
+        }
+    
+        return -1; // Return -1 if the packet is not TCP or UDP
+    }
+
+    public static int getTcpSequenceNumber(Packet packet) {
+        TcpPacket tcpPacket = packet.get(TcpPacket.class);
+        if (tcpPacket != null) {
+            return tcpPacket.getHeader().getSequenceNumber();
+        }
+    
+        return -1; // Return -1 if the packet is not a TCP packet
     }
 }
