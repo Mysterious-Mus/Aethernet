@@ -125,7 +125,7 @@ public class SysRoute {
             if (PacketResolve.isTcpReplyPacket(packet)) {
                 EthernetPacket packet4Aeth = PacketCreate.changeDstIp((EthernetPacket) packet, AetherRoute.node1IP);
                 packet4Aeth = PacketCreate.correctIpV4Checksum((EthernetPacket) packet4Aeth);
-                packet4Aeth = PacketCreate.correctUDPCheckSum((EthernetPacket) packet4Aeth);
+                packet4Aeth = PacketCreate.correctTCPCheckSum((EthernetPacket) packet4Aeth);
                 AetherRoute.deliver(packet4Aeth);
             }
         }

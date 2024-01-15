@@ -302,4 +302,29 @@ public class PacketCreate {
     
         return etherBuilder.build();
     }
+
+    public static EthernetPacket shiftTcpAckNumber(EthernetPacket original, int shift) {
+        // Get the TCP packet
+        TcpPacket tcpPacket = original.get(TcpPacket.class);
+        TcpPacket.Builder tcpBuilder = tcpPacket.getBuilder();
+    
+        // Change the acknowledgement number
+        tcpBuilder.acknowledgmentNumber(tcpPacket.getHeader().getAcknowledgmentNumber() + shift);
+    
+        // Get the IP packet
+        IpV4Packet ipV4Packet = original.get(IpV4Packet.class);
+        IpV4Packet.Builder ipV4Builder = ipV4Packet.getBuilder();
+    
+        // Build a new IP packet with the new TCP packet
+        ipV4Builder.payloadBuilder(tcpBuilder);
+        ipV4Builder.correctChecksumAtBuild(true);
+        ipV4Builder.correctLengthAtBuild(true);
+    
+        // Build a new Ethernet packet with the new IP packet
+        EthernetPacket.Builder etherBuilder = original.getBuilder();
+        etherBuilder.payloadBuilder(ipV4Builder);
+        etherBuilder.paddingAtBuild(true);
+    
+        return etherBuilder.build();
+    }
 }

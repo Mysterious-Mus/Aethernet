@@ -144,12 +144,15 @@ public class AetherRoute {
             else if (PacketResolve.isTcpReplyPacket(packet)) {
                 SysRoute.forward2Internet(
                     PacketCreate.correctTCPCheckSum(
-                        PacketCreate.changeDstMac(
-                            PacketCreate.correctIpV4Checksum(
-                                PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                        PacketCreate.shiftTcpAckNumber(
+                            PacketCreate.changeDstMac(
+                                PacketCreate.correctIpV4Checksum(
+                                    PacketCreate.changeDstIp((EthernetPacket) packet, SysRoute.internetIP)
+                                ),
+                                SysRoute.internetMAC
                             ),
-                            SysRoute.internetMAC
-                        )   
+                            -SysRoute.tcpSeqNumShift
+                        )
                     )
                 );
             }
