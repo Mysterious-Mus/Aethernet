@@ -188,19 +188,6 @@ public class AetherRoute {
     }
 
     /**
-     * if an aether host sends a packet to aethernet, (raised by itself, can only be replying),
-     * it should call this function to feed the packet into the adapter
-     */
-    public static void replyReport(Packet packet) {
-        try {
-            AethernetHandle.sendPacket(packet);
-        }
-        catch (PcapNativeException | NotOpenException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * find the Aethernet adapter and open a handle for it
      * open a MacManager to forward packets 
      */

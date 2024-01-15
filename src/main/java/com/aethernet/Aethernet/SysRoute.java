@@ -9,6 +9,7 @@ import com.aethernet.Aethernet.utils.IPAddr;
 import com.aethernet.Aethernet.utils.PacketResolve;
 import com.aethernet.Aethernet.utils.PacketCreate;
 import com.aethernet.Aethernet.utils.RoutingTableEntry;
+import com.aethernet.Aethernet.utils.WhiteList;
 
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PacketListener;
@@ -49,6 +50,9 @@ public class SysRoute {
     public static PcapHandle internetHandle;
     public static Inet4Address internetIP;
     public static LinkLayerAddress internetMAC;
+    public static WhiteList<String> handleDns = new WhiteList<String>(new String[] {"example.com"});
+    public static WhiteList<Inet4Address> handleTcp = new WhiteList<Inet4Address>(
+        new Inet4Address[] {IPAddr.buildV4FromStr("93.184.216.34")});
     
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 

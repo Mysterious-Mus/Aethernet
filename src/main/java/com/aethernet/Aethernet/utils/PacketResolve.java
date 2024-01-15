@@ -7,6 +7,7 @@ import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.PcapNetworkInterface;
 import org.pcap4j.core.PcapNetworkInterface.PromiscuousMode;
 import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.UdpPacket;
 import org.pcap4j.packet.IcmpV4EchoReplyPacket.IcmpV4EchoReplyHeader;
 import org.pcap4j.packet.UdpPacket.UdpHeader;
@@ -15,6 +16,7 @@ import org.pcap4j.packet.namednumber.IcmpV4Type;
 
 import com.aethernet.Aethernet.AetherRoute;
 import com.aethernet.physical.transmit.AetherPacker;
+import com.aethernet.Aethernet.SysRoute;
 
 import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.IpV4Packet;
@@ -77,8 +79,8 @@ public class PacketResolve {
     public static boolean isDnsQuery(Packet packet) {
         if(packet.contains(DnsPacket.class)) {
             DnsPacket dnsPacket = packet.get(DnsPacket.class);
-            return (!dnsPacket.getHeader().isResponse()) && 
-            dnsPacket.getHeader().getQuestions().get(0).getQName().getName().equals("example.com");
+            return (!dnsPacket.getHeader().isResponse()) && SysRoute.handleDns.contains
+                (dnsPacket.getHeader().getQuestions().get(0).getQName().getName());
         }
         return false;
     }
@@ -87,7 +89,7 @@ public class PacketResolve {
         if(packet.contains(DnsPacket.class)) {
             DnsPacket dnsPacket = packet.get(DnsPacket.class);
             if (dnsPacket.getHeader().isResponse()) {
-                return dnsPacket.getHeader().getQuestions().get(0).getQName().getName().equals("example.com");
+                return SysRoute.handleDns.contains(dnsPacket.getHeader().getQuestions().get(0).getQName().getName());
             }
         }
         return false;
@@ -178,5 +180,10 @@ public class PacketResolve {
         }
         System.out.println("not an icmp packet");
         return 0;
+    }
+
+    public boolean isTcpPacket(Packet packet) {
+        return packet.contains(TcpPacket.class) &&
+            (SysRoute.handleTcp.contains(getDstIP(packet)) || SysRoute.handleTcp.contains(getSrcIP(packet)));
     }
 }
