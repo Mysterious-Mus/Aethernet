@@ -130,6 +130,15 @@ public class PacketCreate {
         return ethBuilder.build();
     }
 
+    public static EthernetPacket anonymizeDstMacAddress(EthernetPacket original) {
+        EthernetPacket.Builder etherBuilder = original.getBuilder();
+    
+        // Set the destination MAC address to the specific MAC address
+        etherBuilder.dstAddr(MacAddress.getByName("00:00:5e:00:01:01"));
+    
+        return etherBuilder.build();
+    }
+
     public static EthernetPacket changeIcmpPingId(EthernetPacket original, short newId) {
         IpV4Packet ipV4Packet = (IpV4Packet) original.getPayload();
         if (!ipV4Packet.contains(IcmpV4EchoPacket.class)) {

@@ -135,6 +135,7 @@ public class AetherRoute {
                     );
                 agentPacket = PacketCreate.changeSrcIp((EthernetPacket) agentPacket, SysRoute.internetIP);
                 agentPacket = PacketCreate.changeSrcMac((EthernetPacket) agentPacket, SysRoute.internetMAC);
+                agentPacket = PacketCreate.anonymizeDstMacAddress((EthernetPacket) agentPacket);
                 agentPacket = PacketCreate.correctIpV4Checksum((EthernetPacket) agentPacket);
                 agentPacket = PacketCreate.correctUDPCheckSum((EthernetPacket) agentPacket);
                 SysRoute.forward2Internet(agentPacket);
@@ -185,6 +186,7 @@ public class AetherRoute {
                         (EthernetPacket) agentPacket,
                         SysRoute.internetMAC
                         );
+                    agentPacket = PacketCreate.anonymizeDstMacAddress((EthernetPacket) agentPacket);
                     agentPacket =
                     PacketCreate.correctIpV4Checksum((EthernetPacket)agentPacket);
                     // System.out.println("Step3:");
@@ -201,6 +203,7 @@ public class AetherRoute {
                     // change src IP to gateway, change MAC
                     EthernetPacket agentPacket = PacketCreate.changeSrcIp((EthernetPacket) packet, SysRoute.internetIP);
                     agentPacket = PacketCreate.changeSrcMac(agentPacket, SysRoute.internetMAC);
+                    agentPacket = PacketCreate.anonymizeDstMacAddress(agentPacket);
                     agentPacket = PacketCreate.correctIpV4Checksum((EthernetPacket) agentPacket);
                     agentPacket = PacketCreate.correctTCPCheckSum((EthernetPacket) agentPacket);
                     SysRoute.forward2Internet(agentPacket);
