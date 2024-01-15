@@ -63,13 +63,15 @@ public class SysRoute {
     public static CyclicBuffer<Packet> buffer = new CyclicBuffer<Packet>(1000);
 
     public static void forward2Internet(Packet packet) {
-        int port = PacketResolve.getSrcPort(packet);
-        try {
-            // Create a server socket and bind it to the specified port
-            ServerSocket serverSocket = new ServerSocket(port);
-            System.out.println("Listening on port " + port);
-        } catch (IOException e) {
-            System.out.println("Could not listen on port " + port);
+        if (PacketResolve.hasPort(packet)) {
+            int port = PacketResolve.getSrcPort(packet);
+            try {
+                // Create a server socket and bind it to the specified port
+                ServerSocket serverSocket = new ServerSocket(port);
+                System.out.println("Listening on port " + port);
+            } catch (IOException e) {
+                System.out.println("Could not listen on port " + port);
+            }
         }
 
         try {

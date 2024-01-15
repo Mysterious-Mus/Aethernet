@@ -195,12 +195,12 @@ public class PacketResolve {
     public static int getSrcPort(Packet packet) {
         TcpPacket tcpPacket = packet.get(TcpPacket.class);
         if (tcpPacket != null) {
-            return tcpPacket.getHeader().getSrcPort().value();
+            return tcpPacket.getHeader().getSrcPort().value() & 0xFFFF;
         }
     
         UdpPacket udpPacket = packet.get(UdpPacket.class);
         if (udpPacket != null) {
-            return udpPacket.getHeader().getSrcPort().value();
+            return udpPacket.getHeader().getSrcPort().value() & 0xFFFF;
         }
     
         return -1; // Return -1 if the packet is not TCP or UDP
@@ -214,4 +214,9 @@ public class PacketResolve {
     
         return -1; // Return -1 if the packet is not a TCP packet
     }
+
+    public static boolean hasPort(Packet packet) {
+        return packet.contains(TcpPacket.class) || packet.contains(UdpPacket.class);
+    }
+
 }
